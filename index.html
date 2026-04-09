@@ -216,7 +216,7 @@ user-select: none;
 #app {
 display: grid;
 grid-template-columns: 220px 1fr 240px;
-grid-template-rows: 1fr 200px;
+grid-template-rows: 1fr 160px;
 height: calc(100vh - 52px);
 min-width: 0;
 overflow: hidden;
@@ -514,8 +514,8 @@ grid-column: 1 / 4;
 grid-row: 2;
 border-right: none;
 border-bottom: none;
-display: grid;
-grid-template-columns: 300px 1fr;
+display: flex;
+flex-direction: column;
 background: var(–bg1);
 border-top: 1px solid var(–border2);
 min-width: 0;
@@ -523,20 +523,28 @@ overflow: hidden;
 }
 
 #threat-panel {
-border-right: 1px solid var(–border);
+border-bottom: 1px solid var(–border);
 display: flex;
 flex-direction: column;
+flex-shrink: 0;
 min-width: 0;
 overflow: hidden;
 }
 
-.threat-form { padding: 8px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.threat-form {
+padding: 6px 8px;
+display: flex;
+flex-direction: row;
+gap: 8px;
+align-items: center;
+flex-wrap: nowrap;
+overflow: hidden;
+}
 
-.form-row { display: flex; gap: 6px; align-items: center; }
-.form-label { font-family: var(–mono); font-size: 9px; color: var(–text2); letter-spacing: 1px; min-width: 60px; }
+.form-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+.form-label { font-family: var(–mono); font-size: 9px; color: var(–text2); letter-spacing: 1px; white-space: nowrap; }
 
 .form-select, .form-input {
-flex: 1;
 background: var(–bg0);
 border: 1px solid var(–border2);
 color: var(–text);
@@ -546,15 +554,16 @@ padding: 4px 6px;
 border-radius: 1px;
 outline: none;
 transition: border-color 0.2s;
+width: auto;
 }
 .form-select:focus, .form-input:focus { border-color: var(–green3); }
 body.exec .form-select, body.exec .form-input { background: white; }
 
 .form-select option { background: var(–bg2); }
 
-.range-wrap { flex: 1; display: flex; align-items: center; gap: 6px; }
+.range-wrap { display: flex; align-items: center; gap: 4px; }
 .form-range {
-flex: 1;
+width: 80px;
 -webkit-appearance: none;
 height: 2px;
 background: var(–border2);
@@ -569,16 +578,16 @@ border-radius: 50%;
 background: var(–green);
 cursor: pointer;
 }
-.range-val { font-family: var(–mono); font-size: 9px; color: var(–green); min-width: 28px; }
+.range-val { font-family: var(–mono); font-size: 9px; color: var(–green); min-width: 32px; white-space: nowrap; }
 
-.action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+.action-btns { display: flex; gap: 4px; flex-shrink: 0; }
 .btn {
 font-family: var(–display);
 font-size: 11px;
 font-weight: 600;
 letter-spacing: 1px;
 text-transform: uppercase;
-padding: 5px 12px;
+padding: 5px 10px;
 border: 1px solid var(–border2);
 border-radius: 1px;
 background: var(–bg3);
@@ -586,7 +595,8 @@ color: var(–text);
 cursor: pointer;
 transition: all 0.15s;
 user-select: none;
-flex: 1;
+white-space: nowrap;
+flex-shrink: 0;
 }
 .btn:hover { border-color: var(–green3); color: var(–green); background: var(–green-glow); }
 .btn.danger:hover { border-color: var(–red2); color: var(–red); background: var(–red-glow); }
@@ -599,6 +609,7 @@ display: flex;
 flex-direction: column;
 border-right: none;
 min-width: 0;
+flex: 1;
 overflow: hidden;
 }
 
@@ -909,31 +920,31 @@ display: none;
     <div class="form-row">
       <div class="form-label">TYPE</div>
       <select class="form-select" id="threat-type">
-        <option value="fpv">FPV Drone (fast/low)</option>
+        <option value="fpv">FPV Drone</option>
         <option value="lm">Loitering Munition</option>
         <option value="cm">Cruise Missile</option>
-        <option value="swarm">Drone Swarm (×5)</option>
-        <option value="atgm">ATGM (high-Pk)</option>
+        <option value="swarm">Drone Swarm ×5</option>
+        <option value="atgm">ATGM</option>
         <option value="ballistic">Ballistic Missile</option>
-        <option value="ghost">Ghost Track (spoofed)</option>
+        <option value="ghost">Ghost/Spoofed</option>
       </select>
     </div>
     <div class="form-row">
-      <div class="form-label">BEARING</div>
+      <div class="form-label">BRG</div>
       <div class="range-wrap">
         <input type="range" class="form-range" id="threat-bearing" min="0" max="360" value="0" oninput="updateBearing(this.value)">
         <div class="range-val" id="bearing-val">000°</div>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">SPEED</div>
+      <div class="form-label">SPD</div>
       <div class="range-wrap">
         <input type="range" class="form-range" id="threat-speed" min="1" max="10" value="4" oninput="updateSpeed(this.value)">
         <div class="range-val" id="speed-val">MED</div>
       </div>
     </div>
     <div class="form-row">
-      <div class="form-label">SIGNAT.</div>
+      <div class="form-label">SIG</div>
       <div class="range-wrap">
         <input type="range" class="form-range" id="threat-sig" min="1" max="10" value="6" oninput="updateSig(this.value)">
         <div class="range-val" id="sig-val">MED</div>
@@ -941,12 +952,10 @@ display: none;
     </div>
     <div class="action-btns">
       <button class="btn" onclick="spawnThreat()">▶ Engage</button>
-      <button class="btn warn" onclick="spawnWave()">⚡ Wave Attack</button>
-      <button class="btn danger" onclick="clearAll()">✕ Reset</button>
-    </div>
-    <div class="action-btns">
+      <button class="btn warn" onclick="spawnWave()">⚡ Wave</button>
       <button class="btn warn" id="c2-btn" onclick="toggleC2()">Degrade C2</button>
-      <button class="btn" onclick="triggerSpoof()">Spoof Track</button>
+      <button class="btn" onclick="triggerSpoof()">Spoof</button>
+      <button class="btn danger" onclick="clearAll()">✕ Reset</button>
     </div>
   </div>
 </div>
