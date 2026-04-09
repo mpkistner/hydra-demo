@@ -5,1899 +5,995 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HYDRA — Kernel Architecture Demonstrator</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg0: #020608;
-  --bg1: #060d12;
-  --bg2: #0a1520;
-  --bg3: #0f1e2e;
-  --bg4: #142438;
-  --border: #1a3348;
-  --border2: #234560;
-  --border3: #2d5a7a;
-  --green: #00ff9d;
-  --green2: #00cc7a;
-  --green3: #008f55;
-  --green-glow: rgba(0,255,157,0.12);
-  --blue: #00b8ff;
-  --blue2: #0080cc;
-  --blue-glow: rgba(0,184,255,0.12);
-  --amber: #ffaa00;
-  --amber2: #cc8800;
-  --amber-glow: rgba(255,170,0,0.12);
-  --red: #ff2244;
-  --red2: #cc1133;
-  --red-glow: rgba(255,34,68,0.12);
-  --purple: #aa44ff;
-  --purple2: #7722cc;
-  --cyan: #00ffee;
-  --text: #8ab4cc;
-  --text2: #5a8099;
-  --text3: #3a5566;
-  --bright: #d0eeff;
-  --mono: 'Share Tech Mono', monospace;
-  --display: 'Rajdhani', sans-serif;
-  --body: 'Exo 2', sans-serif;
+  --bg0:#020608;--bg1:#060d12;--bg2:#0a1520;--bg3:#0f1e2e;
+  --border:#1a3348;--border2:#234560;--border3:#2d5a7a;
+  --green:#00ff9d;--green2:#00cc7a;--green3:#008f55;--gg:rgba(0,255,157,0.12);
+  --blue:#00b8ff;--blue2:#0080cc;--bg-blue:rgba(0,184,255,0.12);
+  --amber:#ffaa00;--amber2:#cc8800;--ga:rgba(255,170,0,0.12);
+  --red:#ff2244;--red2:#cc1133;--gr:rgba(255,34,68,0.12);
+  --purple:#aa44ff;--purple2:#7722cc;
+  --cyan:#00ffee;
+  --text:#8ab4cc;--text2:#5a8099;--text3:#3a5566;--bright:#d0eeff;
+  --mono:'Share Tech Mono',monospace;
+  --display:'Rajdhani',sans-serif;
+  --body:'Exo 2',sans-serif;
 }
-
-/* EXECUTIVE MODE OVERRIDES */
 body.exec {
-–bg0: #f0f4f8;
-–bg1: #e8eef4;
-–bg2: #dde6ee;
-–bg3: #d0dce8;
-–bg4: #c4d2e0;
-–border: #b0c4d6;
-–border2: #90aac0;
-–border3: #6a90aa;
-–green: #006644;
-–green2: #008855;
-–green3: #00aa66;
-–green-glow: rgba(0,102,68,0.08);
-–blue: #004488;
-–blue2: #0055aa;
-–blue-glow: rgba(0,68,136,0.08);
-–amber: #886600;
-–amber2: #aa8800;
-–amber-glow: rgba(136,102,0,0.08);
-–red: #aa1122;
-–red2: #cc2233;
-–red-glow: rgba(170,17,34,0.08);
-–purple: #663399;
-–text: #2a4055;
-–text2: #4a6070;
-–text3: #6a8090;
-–bright: #0a1e2e;
+  --bg0:#f0f4f8;--bg1:#e8eef4;--bg2:#dde6ee;--bg3:#d0dce8;
+  --border:#b0c4d6;--border2:#90aac0;--border3:#6a90aa;
+  --green:#006644;--green2:#008855;--green3:#00aa66;--gg:rgba(0,102,68,0.08);
+  --blue:#004488;--blue2:#0055aa;
+  --amber:#886600;--amber2:#aa8800;--ga:rgba(136,102,0,0.08);
+  --red:#aa1122;--red2:#cc2233;--gr:rgba(170,17,34,0.08);
+  --purple:#663399;--purple2:#884422;
+  --text:#2a4055;--text2:#4a6070;--text3:#6a8090;--bright:#0a1e2e;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;}
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-background: var(–bg0);
-color: var(–text);
-font-family: var(–body);
-font-size: 12px;
-overflow: hidden;
-height: 100vh;
-width: 100vw;
-transition: all 0.4s ease;
-}
-
-/* SCANLINE EFFECT - tactical mode only */
-body:not(.exec)::after {
-content: ‘’;
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-pointer-events: none;
-z-index: 9999;
+/* ── LAYOUT ── */
+#shell {
+display:flex;
+flex-direction:column;
+width:100vw;
+height:100vh;
+background:var(–bg0);
+color:var(–text);
+font-family:var(–body);
+font-size:12px;
 }
 
 /* TOP BAR */
 #topbar {
-height: 52px;
-background: var(–bg1);
-border-bottom: 1px solid var(–border2);
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 0 16px;
-position: relative;
-z-index: 100;
-flex-shrink: 0;
+flex:0 0 48px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 14px;
+background:var(–bg1);
+border-bottom:1px solid var(–border2);
+z-index:100;
 }
+.logo{font-family:var(–display);font-size:26px;font-weight:700;letter-spacing:8px;color:var(–green);text-shadow:0 0 20px var(–green);}
+body.exec .logo{text-shadow:none;}
+.logo-sub{font-family:var(–mono);font-size:8px;color:var(–text3);letter-spacing:2px;}
+.tb-center{display:flex;gap:6px;}
+.mc{font-family:var(–mono);font-size:9px;padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid var(–border2);background:var(–bg2);color:var(–text2);transition:all .2s;user-select:none;}
+.mc.active{color:var(–green);border-color:var(–green3);background:var(–gg);}
+.tb-right{display:flex;gap:14px;align-items:center;}
+.ss{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.ss-v{font-family:var(–mono);font-size:13px;font-weight:600;color:var(–green);}
+.ss-v.warn{color:var(–amber);}
+.ss-v.crit{color:var(–red);}
+.ss-l{font-family:var(–mono);font-size:7px;color:var(–text3);letter-spacing:1px;}
+.c2btn{display:flex;align-items:center;gap:7px;padding:4px 10px;border:1px solid var(–border2);border-radius:2px;cursor:pointer;transition:all .2s;user-select:none;}
+.c2btn.deg{border-color:var(–red);background:rgba(255,34,68,0.1);animation:c2blink .6s infinite;}
+@keyframes c2blink{0%,100%{box-shadow:0 0 4px var(–red);}50%{box-shadow:0 0 16px var(–red);}}
+.c2dot{width:10px;height:10px;border-radius:50%;background:var(–green);box-shadow:0 0 6px var(–green);transition:all .3s;}
+.c2btn.deg .c2dot{background:var(–red);box-shadow:0 0 8px var(–red);animation:dotpulse .4s infinite;}
+@keyframes dotpulse{0%,100%{transform:scale(1);}50%{transform:scale(1.5);}}
+.c2txt{font-family:var(–mono);font-size:10px;color:var(–text);}
 
-.logo-block { display: flex; align-items: baseline; gap: 12px; }
-.logo {
-font-family: var(–display);
-font-size: 28px;
-font-weight: 700;
-letter-spacing: 8px;
-color: var(–green);
-text-shadow: 0 0 30px var(–green), 0 0 60px rgba(0,255,157,0.3);
-}
-body.exec .logo { text-shadow: none; }
-.logo-sub {
-font-family: var(–mono);
-font-size: 9px;
-color: var(–text2);
-letter-spacing: 2px;
-text-transform: uppercase;
-}
-
-.topbar-center {
-display: flex;
-gap: 6px;
-align-items: center;
-}
-
-.mode-chip {
-font-family: var(–mono);
-font-size: 9px;
-padding: 3px 10px;
-border-radius: 2px;
-letter-spacing: 1px;
-text-transform: uppercase;
-cursor: pointer;
-transition: all 0.2s;
-border: 1px solid var(–border2);
-background: var(–bg2);
-color: var(–text2);
-}
-.mode-chip.active { color: var(–green); border-color: var(–green3); background: var(–green-glow); }
-.mode-chip:hover { border-color: var(–border3); color: var(–text); }
-
-.topbar-right { display: flex; gap: 16px; align-items: center; }
-
-.sys-stat {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 1px;
-}
-.sys-stat-val {
-font-family: var(–mono);
-font-size: 14px;
-font-weight: 600;
-color: var(–green);
-}
-.sys-stat-val.warn { color: var(–amber); }
-.sys-stat-val.crit { color: var(–red); }
-.sys-stat-lbl {
-font-family: var(–mono);
-font-size: 8px;
-color: var(–text3);
-letter-spacing: 1px;
-}
-
-.c2-status {
-display: flex;
-align-items: center;
-gap: 8px;
-padding: 4px 12px;
-border: 1px solid var(–border2);
-border-radius: 2px;
-cursor: pointer;
-transition: all 0.2s;
-user-select: none;
-}
-.c2-status:hover { border-color: var(–border3); }
-.c2-status.degraded { border-color: var(–red); animation: c2-warn 0.6s infinite; background: rgba(255,34,68,0.15); }
-@keyframes c2-warn { 0%,100% { box-shadow: 0 0 4px var(–red); } 50% { box-shadow: 0 0 16px var(–red), 0 0 30px rgba(255,34,68,0.4); } }
-.c2-dot { width: 10px; height: 10px; border-radius: 50%; background: var(–green); transition: background 0.3s; box-shadow: 0 0 6px var(–green); }
-.c2-status.degraded .c2-dot { background: var(–red); box-shadow: 0 0 8px var(–red), 0 0 16px rgba(255,34,68,0.6); animation: dot-pulse 0.4s infinite; }
-@keyframes dot-pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } }
-.c2-text { font-family: var(–mono); font-size: 10px; color: var(–text); }
-
-.view-toggle {
-display: flex;
-gap: 2px;
-background: var(–bg2);
-padding: 3px;
-border-radius: 3px;
-border: 1px solid var(–border);
-}
-.view-btn {
-font-family: var(–mono);
-font-size: 9px;
-padding: 3px 8px;
-border-radius: 2px;
-cursor: pointer;
-color: var(–text2);
-transition: all 0.2s;
-letter-spacing: 1px;
-user-select: none;
-}
-.view-btn.active { background: var(–bg4); color: var(–green); }
-.view-btn:hover:not(.active) { color: var(–text); }
-
-/* MAIN LAYOUT */
-#app {
-display: grid;
-grid-template-columns: 220px 1fr 240px;
-grid-template-rows: 1fr 160px;
-height: calc(100vh - 52px);
-min-width: 0;
-overflow: hidden;
+/* MIDDLE ROW: sensor | tactical | arb */
+#middle {
+flex:1 1 0;
+display:flex;
+min-height:0;
 }
 
 /* PANELS */
-.panel {
-background: var(–bg1);
-border-right: 1px solid var(–border);
-border-bottom: 1px solid var(–border);
-display: flex;
-flex-direction: column;
-overflow: hidden;
+.panel{display:flex;flex-direction:column;background:var(–bg1);border-right:1px solid var(–border);min-height:0;overflow:hidden;}
+.ph{flex:0 0 auto;padding:6px 10px;background:var(–bg2);border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;}
+.pht{font-family:var(–display);font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(–text2);}
+.phb{font-family:var(–mono);font-size:8px;padding:2px 6px;border-radius:2px;background:var(–bg3);color:var(–green);border:1px solid var(–green3);}
+.phb.warn{color:var(–amber);border-color:var(–amber2);}
+.phb.crit{color:var(–red);border-color:var(–red2);}
+.pc{flex:1 1 0;overflow-y:auto;padding:7px;}
+.pc::-webkit-scrollbar{width:3px;}
+.pc::-webkit-scrollbar-thumb{background:var(–border2);}
+
+/* SENSOR PANEL */
+#sp{flex:0 0 210px;}
+.snode{padding:7px 9px;margin-bottom:5px;border:1px solid var(–border);border-radius:2px;background:var(–bg2);cursor:pointer;position:relative;overflow:hidden;transition:all .2s;}
+.snode::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:2px;transition:background .2s;}
+.snode.on::before{background:var(–green);}
+.snode.deg::before{background:var(–amber);}
+.snode.off::before{background:var(–red);}
+.snode.off{opacity:.4;}
+.snode.pulse{animation:snpulse .4s ease;}
+@keyframes snpulse{0%{border-color:white;}100%{border-color:var(–border);}}
+.sn-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.sn-name{font-family:var(–display);font-size:11px;font-weight:600;color:var(–bright);letter-spacing:.5px;}
+.sn-st{font-family:var(–mono);font-size:8px;padding:1px 4px;border-radius:1px;text-transform:uppercase;}
+.sn-st.on{color:var(–green);border:1px solid var(–green3);background:var(–gg);}
+.sn-st.deg{color:var(–amber);border:1px solid var(–amber2);background:var(–ga);}
+.sn-st.off{color:var(–red);border:1px solid var(–red2);background:var(–gr);}
+.sn-type{font-family:var(–mono);font-size:7px;color:var(–text3);letter-spacing:1px;margin-bottom:4px;}
+.sn-m{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;}
+.sn-box{background:var(–bg0);padding:2px 3px;border-radius:1px;text-align:center;}
+.sn-bv{font-family:var(–mono);font-size:10px;}
+.sn-bv.g{color:var(–green);}
+.sn-bv.a{color:var(–amber);}
+.sn-bv.b{color:var(–blue);}
+.sn-bl{font-family:var(–mono);font-size:7px;color:var(–text3);}
+.cbar{height:2px;background:var(–border);border-radius:1px;margin-top:4px;overflow:hidden;}
+.cbfill{height:100%;border-radius:1px;transition:width .5s,background .5s;}
+
+/* TACTICAL PANEL */
+#tp{flex:1 1 0;position:relative;background:var(–bg0);border-right:1px solid var(–border);display:flex;flex-direction:column;}
+#tph{flex:0 0 auto;padding:6px 12px;background:var(–bg2);border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;}
+#tac{flex:1 1 0;width:100%;cursor:crosshair;}
+/* overlays */
+.ov{position:absolute;pointer-events:none;z-index:10;}
+#fchips{top:46px;left:50%;transform:translateX(-50%);display:flex;gap:5px;}
+.fc{font-family:var(–mono);font-size:8px;padding:2px 7px;border-radius:1px;letter-spacing:1px;text-transform:uppercase;border:1px solid;transition:all .3s;}
+.fc.on{color:var(–green);border-color:var(–green3);background:var(–gg);}
+.fc.off{color:var(–red);border-color:var(–red2);background:var(–gr);opacity:.7;}
+.fc.warn{color:var(–amber);border-color:var(–amber2);background:var(–ga);}
+#modebanner{top:46px;right:8px;font-family:var(–mono);font-size:11px;font-weight:700;padding:4px 10px;border-radius:2px;letter-spacing:2px;text-transform:uppercase;border:1px solid var(–green3);color:var(–green);background:var(–gg);box-shadow:0 0 10px rgba(0,255,157,.2);transition:all .3s;}
+#modebanner.g{color:var(–amber);border-color:var(–amber2);background:var(–ga);box-shadow:0 0 14px rgba(255,170,0,.4);animation:mbpulse .7s infinite;}
+#modebanner.c{color:var(–purple);border-color:var(–purple2);background:rgba(170,68,255,.15);animation:mbpulse .7s infinite;}
+#modebanner.m{color:var(–red);border-color:var(–red2);background:var(–gr);animation:mbpulse .5s infinite;}
+@keyframes mbpulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+#c2ov{top:0;left:0;right:0;bottom:0;border:4px solid var(–red);opacity:0;transition:opacity .3s;box-shadow:inset 0 0 30px rgba(255,34,68,.3);}
+#c2ov.show{opacity:1;animation:c2ov .6s infinite;}
+@keyframes c2ov{0%,100%{opacity:.4;}50%{opacity:1;}}
+#c2ban{top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(–display);font-size:18px;font-weight:700;letter-spacing:4px;color:var(–red);background:rgba(2,6,8,.92);padding:14px 28px;border:2px solid var(–red);text-transform:uppercase;display:none;box-shadow:0 0 30px rgba(255,34,68,.5);white-space:nowrap;}
+#c2ban.show{display:block;animation:c2bantxt .6s infinite;}
+@keyframes c2bantxt{0%,100%{opacity:1;text-shadow:0 0 10px var(–red);}50%{opacity:.5;text-shadow:none;}}
+#spoofal{top:46px;left:8px;font-family:var(–mono);font-size:9px;color:var(–purple);background:rgba(170,68,255,.1);border:1px solid var(–purple2);padding:3px 8px;border-radius:2px;display:none;}
+#spoofal.show{display:block;animation:mbpulse .5s infinite;}
+#tacleg{bottom:8px;left:8px;display:flex;flex-direction:column;gap:3px;}
+.li{display:flex;align-items:center;gap:5px;font-family:var(–mono);font-size:8px;color:var(–text3);}
+.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ll{width:12px;height:2px;flex-shrink:0;}
+
+/* ARB PANEL */
+#ap{flex:0 0 240px;border-right:none;}
+.ecard{padding:7px 9px;margin-bottom:5px;border:1px solid var(–border);border-radius:2px;background:var(–bg2);transition:all .3s;position:relative;overflow:hidden;}
+.ecard::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:2px;}
+.ecard.ready::before{background:var(–green);}
+.ecard.assigned::before{background:var(–amber);}
+.ecard.engaging::before{background:var(–red);}
+.ecard.offline::before{background:var(–text3);}
+.ecard.offline{opacity:.35;}
+.ecard.auto::before{background:var(–purple);}
+.ec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.ec-name{font-family:var(–display);font-size:11px;font-weight:600;color:var(–bright);}
+.ebadge{font-family:var(–mono);font-size:8px;padding:1px 5px;border-radius:1px;text-transform:uppercase;}
+.br{color:var(–green);border:1px solid var(–green3);background:var(–gg);}
+.ba{color:var(–amber);border:1px solid var(–amber2);background:var(–ga);}
+.be{color:var(–red);border:1px solid var(–red2);background:var(–gr);animation:mbpulse .5s infinite;}
+.bo{color:var(–text3);border:1px solid var(–text3);}
+.bau{color:var(–purple);border:1px solid var(–purple2);background:rgba(170,68,255,.1);}
+.ec-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:3px;}
+.ec-s{background:var(–bg0);padding:2px 3px;border-radius:1px;text-align:center;}
+.ec-sv{font-family:var(–mono);font-size:10px;}
+.ec-sl{font-family:var(–mono);font-size:7px;color:var(–text3);}
+.abar{height:2px;background:var(–border);border-radius:1px;margin-top:4px;overflow:hidden;}
+.afill{height:100%;border-radius:1px;transition:width .4s;}
+.ahi{background:var(–green);}.ami{background:var(–amber);}.alo{background:var(–red);}
+/* autonomy */
+.hbeat{display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(–bg2);border:1px solid var(–border);border-radius:2px;margin-bottom:4px;font-family:var(–mono);font-size:9px;}
+.hbdot{width:6px;height:6px;border-radius:50%;background:var(–green);animation:hb 1s infinite;}
+.hbeat.deg .hbdot{background:var(–red);animation:hbf .3s infinite;}
+@keyframes hb{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes hbf{0%,100%{opacity:1;}50%{opacity:.1;}}
+.hbv{color:var(–green);}
+.hbeat.deg .hbv{color:var(–red);}
+.hbt{color:var(–text2);}
+.amdisp{padding:5px 8px;background:var(–bg2);border:1px solid var(–border);border-radius:2px;margin-bottom:4px;}
+.amdt{font-family:var(–mono);font-size:7px;color:var(–text3);letter-spacing:1px;margin-bottom:3px;text-transform:uppercase;}
+.amdmodes{display:flex;gap:3px;}
+.amdm{flex:1;padding:3px 2px;text-align:center;border:1px solid var(–border);border-radius:1px;font-family:var(–mono);font-size:8px;color:var(–text3);transition:all .3s;}
+.amdm.ac{color:var(–green);border-color:var(–green3);background:var(–gg);font-weight:700;box-shadow:0 0 8px rgba(0,255,157,.3);}
+.amdm.ag{color:var(–amber);border-color:var(–amber2);background:var(–ga);font-weight:700;box-shadow:0 0 10px rgba(255,170,0,.5);animation:mbpulse .7s infinite;}
+.amdm.aconst{color:var(–purple);border-color:var(–purple2);background:rgba(170,68,255,.15);font-weight:700;animation:mbpulse .7s infinite;}
+.amdm.am{color:var(–red);border-color:var(–red2);background:var(–gr);font-weight:700;animation:mbpulse .5s infinite;}
+/* scoring */
+#scorearea{padding:6px 8px;border-top:1px solid var(–border);background:var(–bg2);flex-shrink:0;}
+.sct{font-family:var(–mono);font-size:7px;color:var(–text3);letter-spacing:1px;margin-bottom:3px;text-transform:uppercase;}
+.srow{display:flex;align-items:center;gap:4px;padding:2px 5px;margin-bottom:2px;background:var(–bg3);border:1px solid var(–border);border-radius:1px;font-family:var(–mono);font-size:9px;}
+.srow.win{border-color:var(–amber2);background:var(–ga);}
+.sn{flex:1;color:var(–text);}
+.sr{font-size:8px;color:var(–text3);min-width:55px;}
+.sbw{width:44px;height:3px;background:var(–border);border-radius:2px;overflow:hidden;}
+.sbf{height:100%;background:var(–blue);border-radius:2px;transition:width .4s;}
+.srow.win .sbf{background:var(–amber);}
+.sv{color:var(–blue);min-width:34px;text-align:right;}
+.srow.win .sv{color:var(–amber);}
+.swi{color:var(–amber);font-size:10px;}
+
+/* BOTTOM ROW */
+#bottom {
+flex:0 0 180px;
+display:flex;
+border-top:1px solid var(–border2);
+min-height:0;
+background:var(–bg1);
 }
 
-.ph {
-padding: 7px 10px;
-background: var(–bg2);
-border-bottom: 1px solid var(–border);
-display: flex;
-align-items: center;
-justify-content: space-between;
-flex-shrink: 0;
+/* CONTROLS */
+#controls {
+flex:0 0 340px;
+border-right:1px solid var(–border);
+display:flex;
+flex-direction:column;
+min-height:0;
 }
-.ph-title {
-font-family: var(–display);
-font-size: 11px;
-font-weight: 600;
-letter-spacing: 2px;
-text-transform: uppercase;
-color: var(–text2);
-}
-.ph-badge {
-font-family: var(–mono);
-font-size: 9px;
-padding: 2px 6px;
-border-radius: 2px;
-background: var(–bg3);
-color: var(–green);
-border: 1px solid var(–green3);
-}
-.ph-badge.warn { color: var(–amber); border-color: var(–amber2); }
-.ph-badge.crit { color: var(–red); border-color: var(–red2); }
-
-.pc { overflow-y: auto; flex: 1; padding: 8px; }
-.pc::-webkit-scrollbar { width: 3px; }
-.pc::-webkit-scrollbar-track { background: var(–bg1); }
-.pc::-webkit-scrollbar-thumb { background: var(–border2); }
-
-/* LEFT PANEL - SENSORS */
-#sensor-panel { grid-row: 1; grid-column: 1; }
-
-.sensor-node {
-padding: 8px 10px;
-margin-bottom: 5px;
-border: 1px solid var(–border);
-border-radius: 2px;
-background: var(–bg2);
-cursor: pointer;
-transition: all 0.2s;
-position: relative;
-overflow: hidden;
-}
-.sensor-node::before {
-content: ‘’;
-position: absolute;
-left: 0; top: 0; bottom: 0;
-width: 2px;
-transition: all 0.2s;
-}
-.sensor-node.online::before { background: var(–green); }
-.sensor-node.degraded::before { background: var(–amber); }
-.sensor-node.offline::before { background: var(–red); opacity: 0.5; }
-.sensor-node.offline { opacity: 0.4; }
-.sensor-node.pulsing { animation: s-pulse 0.4s ease; }
-@keyframes s-pulse { 0% { border-color: white; } 100% { border-color: var(–border); } }
-
-.sn-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.sn-name { font-family: var(–display); font-size: 12px; font-weight: 600; color: var(–bright); letter-spacing: 1px; }
-.sn-status {
-font-family: var(–mono);
-font-size: 8px;
-padding: 1px 5px;
-border-radius: 1px;
-text-transform: uppercase;
-}
-.sn-status.online { color: var(–green); border: 1px solid var(–green3); background: var(–green-glow); }
-.sn-status.degraded { color: var(–amber); border: 1px solid var(–amber2); background: var(–amber-glow); }
-.sn-status.offline { color: var(–red); border: 1px solid var(–red2); background: var(–red-glow); }
-
-.sn-type { font-family: var(–mono); font-size: 8px; color: var(–text3); letter-spacing: 1px; margin-bottom: 5px; }
-
-.sn-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
-.sn-metric { background: var(–bg0); padding: 3px 4px; border-radius: 1px; text-align: center; }
-.sn-metric-val { font-family: var(–mono); font-size: 10px; color: var(–blue); }
-.sn-metric-val.green { color: var(–green); }
-.sn-metric-val.amber { color: var(–amber); }
-.sn-metric-val.red { color: var(–red); }
-.sn-metric-lbl { font-family: var(–mono); font-size: 7px; color: var(–text3); letter-spacing: 1px; }
-
-.conf-bar { height: 2px; background: var(–border); border-radius: 1px; margin-top: 5px; overflow: hidden; }
-.conf-fill { height: 100%; border-radius: 1px; transition: width 0.5s, background 0.5s; }
-
-/* CENTER - TACTICAL */
-#tactical-panel {
-grid-column: 2;
-grid-row: 1;
-position: relative;
-background: var(–bg0);
-display: flex;
-flex-direction: column;
-border-right: 1px solid var(–border);
-}
-
-#tac-header {
-padding: 7px 12px;
-background: var(–bg2);
-border-bottom: 1px solid var(–border);
-display: flex;
-align-items: center;
-justify-content: space-between;
-flex-shrink: 0;
-}
-
-#tactical-canvas { flex: 1; width: 100%; cursor: crosshair; }
-
-.tac-overlay {
-position: absolute;
-pointer-events: none;
-z-index: 10;
-}
-
-#fusion-chips {
-top: 52px;
-left: 50%;
-transform: translateX(-50%);
-display: flex;
-gap: 6px;
-}
-.fchip {
-font-family: var(–mono);
-font-size: 8px;
-padding: 2px 8px;
-border-radius: 1px;
-letter-spacing: 1px;
-text-transform: uppercase;
-border: 1px solid;
-transition: all 0.3s;
-}
-.fchip.on { color: var(–green); border-color: var(–green3); background: var(–green-glow); }
-.fchip.off { color: var(–red); border-color: var(–red2); background: var(–red-glow); opacity: 0.6; }
-.fchip.warn { color: var(–amber); border-color: var(–amber2); background: var(–amber-glow); }
-
-#mode-banner {
-top: 52px;
-right: 8px;
-font-family: var(–mono);
-font-size: 11px;
-font-weight: 700;
-padding: 5px 12px;
-border-radius: 2px;
-letter-spacing: 2px;
-text-transform: uppercase;
-border: 1px solid var(–green3);
-color: var(–green);
-background: var(–green-glow);
-box-shadow: 0 0 10px rgba(0,255,157,0.2);
-transition: all 0.3s;
-}
-#mode-banner.guarded { color: var(–amber); border-color: var(–amber2); background: var(–amber-glow); box-shadow: 0 0 14px rgba(255,170,0,0.4); animation: banner-warn 0.7s infinite; }
-#mode-banner.constrained { color: var(–purple); border-color: var(–purple2); background: rgba(170,68,255,0.15); box-shadow: 0 0 14px rgba(170,68,255,0.4); animation: banner-warn 0.7s infinite; }
-#mode-banner.manual { color: var(–red); border-color: var(–red2); background: var(–red-glow); box-shadow: 0 0 14px rgba(255,34,68,0.4); animation: banner-warn 0.5s infinite; }
-@keyframes banner-warn { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-#c2-overlay {
-top: 0; left: 0; right: 0; bottom: 0;
-border: 4px solid var(–red);
-pointer-events: none;
-opacity: 0;
-transition: opacity 0.3s;
-box-shadow: inset 0 0 30px rgba(255,34,68,0.3), 0 0 30px rgba(255,34,68,0.3);
-}
-#c2-overlay.show { opacity: 1; animation: border-flash 0.6s infinite; }
-@keyframes border-flash { 0%,100% { opacity: 0.4; box-shadow: inset 0 0 20px rgba(255,34,68,0.2); } 50% { opacity: 1; box-shadow: inset 0 0 60px rgba(255,34,68,0.5), 0 0 40px rgba(255,34,68,0.4); } }
-
-#c2-banner {
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-font-family: var(–display);
-font-size: 18px;
-font-weight: 700;
-letter-spacing: 4px;
-color: var(–red);
-background: rgba(2,6,8,0.92);
-padding: 14px 28px;
-border: 2px solid var(–red);
-text-transform: uppercase;
-display: none;
-box-shadow: 0 0 30px rgba(255,34,68,0.5), inset 0 0 20px rgba(255,34,68,0.1);
-white-space: nowrap;
-}
-#c2-banner.show { display: block; animation: txt-flash 0.6s infinite; }
-@keyframes txt-flash { 0%,100% { opacity: 1; text-shadow: 0 0 10px var(–red); } 50% { opacity: 0.5; text-shadow: none; } }
-
-#tac-legend {
-bottom: 8px;
-left: 8px;
-display: flex;
-flex-direction: column;
-gap: 3px;
-}
-.legend-item { display: flex; align-items: center; gap: 5px; font-family: var(–mono); font-size: 8px; color: var(–text3); }
-.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.legend-line { width: 12px; height: 2px; flex-shrink: 0; }
-
-/* RIGHT PANEL - ARBITRATION */
-#arb-panel { grid-column: 3; grid-row: 1; border-right: none; }
-
-.effector-card {
-padding: 8px 10px;
-margin-bottom: 5px;
-border: 1px solid var(–border);
-border-radius: 2px;
-background: var(–bg2);
-transition: all 0.3s;
-position: relative;
-overflow: hidden;
-}
-.effector-card::before {
-content: ‘’;
-position: absolute;
-left: 0; top: 0; bottom: 0;
-width: 2px;
-}
-.effector-card.ready::before { background: var(–green); }
-.effector-card.assigned::before { background: var(–amber); }
-.effector-card.engaging::before { background: var(–red); }
-.effector-card.offline::before { background: var(–text3); }
-.effector-card.offline { opacity: 0.35; }
-.effector-card.autonomous::before { background: var(–purple); }
-
-.ec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.ec-name { font-family: var(–display); font-size: 12px; font-weight: 600; color: var(–bright); letter-spacing: 0.5px; }
-.ec-badge {
-font-family: var(–mono);
-font-size: 8px;
-padding: 1px 5px;
-border-radius: 1px;
-text-transform: uppercase;
-}
-.badge-ready { color: var(–green); border: 1px solid var(–green3); background: var(–green-glow); }
-.badge-assigned { color: var(–amber); border: 1px solid var(–amber2); background: var(–amber-glow); }
-.badge-engaging { color: var(–red); border: 1px solid var(–red2); background: var(–red-glow); animation: badge-flash 0.5s infinite; }
-@keyframes badge-flash { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-.badge-offline { color: var(–text3); border: 1px solid var(–text3); }
-.badge-auto { color: var(–purple); border: 1px solid var(–purple2); background: rgba(170,68,255,0.1); }
-
-.ec-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; margin-top: 4px; }
-.ec-stat { background: var(–bg0); padding: 3px 4px; border-radius: 1px; text-align: center; }
-.ec-stat-val { font-family: var(–mono); font-size: 10px; }
-.ec-stat-lbl { font-family: var(–mono); font-size: 7px; color: var(–text3); }
-
-.ammo-bar { height: 2px; background: var(–border); border-radius: 1px; margin-top: 5px; overflow: hidden; }
-.ammo-fill { height: 100%; border-radius: 1px; transition: width 0.4s; }
-.ammo-hi { background: var(–green); }
-.ammo-md { background: var(–amber); }
-.ammo-lo { background: var(–red); }
-
-/* SCORING PANEL - inside arb */
-.score-row {
-display: flex;
-align-items: center;
-gap: 4px;
-padding: 3px 6px;
-margin-bottom: 2px;
-background: var(–bg2);
-border-radius: 1px;
-border: 1px solid var(–border);
-transition: all 0.2s;
-font-family: var(–mono);
-font-size: 9px;
-}
-.score-row.winner { border-color: var(–amber2); background: var(–amber-glow); }
-.score-name { flex: 1; color: var(–text); }
-.score-val { color: var(–blue); min-width: 36px; text-align: right; }
-.score-bar-wrap { width: 50px; height: 4px; background: var(–border); border-radius: 2px; overflow: hidden; }
-.score-bar-fill { height: 100%; background: var(–blue); border-radius: 2px; transition: width 0.4s; }
-.score-row.winner .score-bar-fill { background: var(–amber); }
-.score-winner-icon { color: var(–amber); font-size: 10px; }
-
-/* BOTTOM - THREAT ENTRY + AUDIT */
-#bottom-bar {
-grid-column: 1 / 4;
-grid-row: 2;
-border-right: none;
-border-bottom: none;
-display: flex;
-flex-direction: column;
-background: var(–bg1);
-border-top: 1px solid var(–border2);
-min-width: 0;
-overflow: hidden;
-}
-
-#threat-panel {
-border-bottom: 1px solid var(–border);
-display: flex;
-flex-direction: column;
-flex-shrink: 0;
-min-width: 0;
-overflow: hidden;
-}
-
-.threat-form {
-padding: 6px 8px;
-display: flex;
-flex-direction: row;
-gap: 8px;
-align-items: center;
-flex-wrap: nowrap;
-overflow: hidden;
-}
-
-.form-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
-.form-label { font-family: var(–mono); font-size: 9px; color: var(–text2); letter-spacing: 1px; white-space: nowrap; }
-
-.form-select, .form-input {
-background: var(–bg0);
-border: 1px solid var(–border2);
-color: var(–text);
-font-family: var(–mono);
-font-size: 10px;
-padding: 4px 6px;
-border-radius: 1px;
-outline: none;
-transition: border-color 0.2s;
-width: auto;
-}
-.form-select:focus, .form-input:focus { border-color: var(–green3); }
-body.exec .form-select, body.exec .form-input { background: white; }
-
-.form-select option { background: var(–bg2); }
-
-.range-wrap { display: flex; align-items: center; gap: 4px; }
-.form-range {
-width: 80px;
--webkit-appearance: none;
-height: 2px;
-background: var(–border2);
-border-radius: 1px;
-outline: none;
-}
-.form-range::-webkit-slider-thumb {
--webkit-appearance: none;
-width: 10px;
-height: 10px;
-border-radius: 50%;
-background: var(–green);
-cursor: pointer;
-}
-.range-val { font-family: var(–mono); font-size: 9px; color: var(–green); min-width: 32px; white-space: nowrap; }
-
-.action-btns { display: flex; gap: 4px; flex-shrink: 0; }
-.btn {
-font-family: var(–display);
-font-size: 11px;
-font-weight: 600;
-letter-spacing: 1px;
-text-transform: uppercase;
-padding: 5px 10px;
-border: 1px solid var(–border2);
-border-radius: 1px;
-background: var(–bg3);
-color: var(–text);
-cursor: pointer;
-transition: all 0.15s;
-user-select: none;
-white-space: nowrap;
-flex-shrink: 0;
-}
-.btn:hover { border-color: var(–green3); color: var(–green); background: var(–green-glow); }
-.btn.danger:hover { border-color: var(–red2); color: var(–red); background: var(–red-glow); }
-.btn.warn:hover { border-color: var(–amber2); color: var(–amber); background: var(–amber-glow); }
-.btn.active { border-color: var(–red2); color: var(–red); background: var(–red-glow); }
+.cph{flex:0 0 auto;padding:5px 10px;background:var(–bg2);border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;}
+.cpc{flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;overflow:hidden;}
+.crow{display:flex;align-items:center;gap:6px;}
+.clbl{font-family:var(–mono);font-size:9px;color:var(–text2);letter-spacing:1px;min-width:52px;flex-shrink:0;}
+.csel,.cinp{flex:1;background:var(–bg0);border:1px solid var(–border2);color:var(–text);font-family:var(–mono);font-size:10px;padding:3px 5px;border-radius:1px;outline:none;}
+body.exec .csel,body.exec .cinp{background:white;}
+.csel option{background:var(–bg2);}
+.rw{flex:1;display:flex;align-items:center;gap:5px;}
+.rng{flex:1;-webkit-appearance:none;height:2px;background:var(–border2);border-radius:1px;outline:none;}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(–green);cursor:pointer;}
+.rv{font-family:var(–mono);font-size:9px;color:var(–green);min-width:30px;flex-shrink:0;}
+.btns{display:flex;gap:4px;flex-wrap:wrap;}
+.btn{font-family:var(–display);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border:1px solid var(–border2);border-radius:1px;background:var(–bg3);color:var(–text);cursor:pointer;transition:all .15s;user-select:none;white-space:nowrap;}
+.btn:hover{border-color:var(–green3);color:var(–green);background:var(–gg);}
+.btn.d:hover{border-color:var(–red2);color:var(–red);background:var(–gr);}
+.btn.w:hover{border-color:var(–amber2);color:var(–amber);background:var(–ga);}
+.btn.act{border-color:var(–red2);color:var(–red);background:var(–gr);}
 
 /* AUDIT LOG */
-#audit-panel {
-display: flex;
-flex-direction: column;
-border-right: none;
-min-width: 0;
-flex: 1;
-overflow: hidden;
+#audit {
+flex:1 1 0;
+display:flex;
+flex-direction:column;
+min-width:0;
+overflow:hidden;
 }
+#alog{flex:1;overflow-y:auto;padding:4px 8px;font-family:var(–mono);font-size:10px;}
+#alog::-webkit-scrollbar{width:3px;}
+#alog::-webkit-scrollbar-thumb{background:var(–border2);}
+.lent{display:flex;gap:7px;padding:2px 0;border-bottom:1px solid rgba(26,51,72,.4);animation:lslide .2s ease;align-items:baseline;}
+@keyframes lslide{from{opacity:0;transform:translateX(-4px);}to{opacity:1;}}
+.lts{color:var(–text3);min-width:78px;font-size:9px;flex-shrink:0;}
+.llyr{font-size:8px;padding:1px 4px;border-radius:1px;min-width:60px;text-align:center;border:1px solid;flex-shrink:0;}
+.ls{color:var(–green2);border-color:var(–green3);background:var(–gg);}
+.lf{color:var(–purple);border-color:var(–purple2);background:rgba(170,68,255,.08);}
+.la{color:var(–amber);border-color:var(–amber2);background:var(–ga);}
+.le{color:var(–red);border-color:var(–red2);background:var(–gr);}
+.lau{color:var(–blue);border-color:var(–blue2);background:var(–bg-blue);}
+.lc2{color:var(–red);border-color:var(–red2);background:var(–gr);font-weight:700;}
+.lsy{color:var(–cyan);border-color:rgba(0,255,238,.3);background:rgba(0,255,238,.05);}
+.lmsg{color:var(–text);flex:1;}
+.lhsh{color:var(–text3);font-size:8px;flex-shrink:0;}
 
-#audit-log {
-flex: 1;
-overflow-y: auto;
-padding: 4px 8px;
-font-family: var(–mono);
-font-size: 10px;
-}
-#audit-log::-webkit-scrollbar { width: 3px; }
-#audit-log::-webkit-scrollbar-thumb { background: var(–border2); }
-
-.log-entry {
-display: flex;
-gap: 8px;
-padding: 2px 0;
-border-bottom: 1px solid rgba(26,51,72,0.4);
-animation: log-slide 0.2s ease;
-align-items: baseline;
-}
-@keyframes log-slide { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; } }
-
-.log-ts { color: var(–text3); min-width: 80px; font-size: 9px; }
-.log-layer {
-font-size: 8px;
-padding: 1px 5px;
-border-radius: 1px;
-min-width: 76px;
-text-align: center;
-border: 1px solid;
-flex-shrink: 0;
-}
-.ll-sensor { color: var(–green2); border-color: var(–green3); background: var(–green-glow); }
-.ll-fusion { color: var(–purple); border-color: var(–purple2); background: rgba(170,68,255,0.08); }
-.ll-arb { color: var(–amber); border-color: var(–amber2); background: var(–amber-glow); }
-.ll-engage { color: var(–red); border-color: var(–red2); background: var(–red-glow); }
-.ll-audit { color: var(–blue); border-color: var(–blue2); background: var(–blue-glow); }
-.ll-c2 { color: var(–red); border-color: var(–red2); background: var(–red-glow); font-weight: bold; }
-.ll-system { color: var(–cyan); border-color: rgba(0,255,238,0.3); background: rgba(0,255,238,0.05); }
-
-.log-msg { color: var(–text); flex: 1; }
-.log-hash { color: var(–text3); font-size: 8px; flex-shrink: 0; }
-
-/* ARBITRATION SCORE TABLE */
-#score-panel {
-padding: 6px 8px;
-border-top: 1px solid var(–border);
-background: var(–bg2);
-flex-shrink: 0;
-}
-.score-panel-title { font-family: var(–mono); font-size: 8px; color: var(–text3); letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
-
-/* THREAT TRACK CARD */
-.track-card {
-padding: 5px 8px;
-margin-bottom: 4px;
-border: 1px solid var(–border);
-border-radius: 2px;
-background: var(–bg3);
-font-family: var(–mono);
-font-size: 9px;
-position: relative;
-}
-.track-card::before {
-content: ‘’;
-position: absolute;
-left: 0; top: 0; bottom: 0;
-width: 2px;
-background: var(–red);
-}
-.tc-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
-.tc-id { color: var(–red); font-size: 10px; font-weight: 600; }
-.tc-type { color: var(–amber); }
-.tc-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
-.tc-stat { background: var(–bg0); padding: 2px 4px; border-radius: 1px; text-align: center; }
-.tc-val { font-size: 10px; color: var(–blue); }
-.tc-lbl { font-size: 7px; color: var(–text3); }
-.tc-assigned { color: var(–amber); font-size: 8px; margin-top: 3px; }
-
-/* UTILITY BREAKDOWN */
-.utility-breakdown {
-padding: 4px 8px;
-background: var(–bg3);
-border: 1px solid var(–border);
-border-radius: 2px;
-margin-bottom: 4px;
-font-family: var(–mono);
-font-size: 9px;
-}
-.ub-title { color: var(–text2); font-size: 8px; letter-spacing: 1px; margin-bottom: 3px; text-transform: uppercase; }
-.ub-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
-.ub-label { color: var(–text3); }
-.ub-val { color: var(–blue); }
-.ub-total { border-top: 1px solid var(–border); padding-top: 2px; margin-top: 2px; }
-.ub-total .ub-val { color: var(–amber); font-weight: 600; }
-
-/* AUTONOMY PANEL */
-.auto-mode-display {
-padding: 6px 8px;
-background: var(–bg2);
-border: 1px solid var(–border);
-border-radius: 2px;
-margin-bottom: 5px;
-}
-.amd-title { font-family: var(–mono); font-size: 8px; color: var(–text3); letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
-.amd-modes { display: flex; gap: 3px; }
-.amd-mode {
-flex: 1;
-padding: 4px 2px;
-text-align: center;
-border: 1px solid var(–border);
-border-radius: 1px;
-font-family: var(–mono);
-font-size: 8px;
-color: var(–text3);
-transition: all 0.3s;
-}
-.amd-mode.active-central { color: var(–green); border-color: var(–green3); background: var(–green-glow); font-weight: 700; box-shadow: 0 0 8px rgba(0,255,157,0.3); }
-.amd-mode.active-guarded { color: var(–amber); border-color: var(–amber2); background: var(–amber-glow); font-weight: 700; box-shadow: 0 0 8px rgba(255,170,0,0.4); animation: mode-pulse 0.8s infinite; }
-.amd-mode.active-constrained { color: var(–purple); border-color: var(–purple2); background: rgba(170,68,255,0.15); font-weight: 700; box-shadow: 0 0 8px rgba(170,68,255,0.4); animation: mode-pulse 0.8s infinite; }
-.amd-mode.active-manual { color: var(–red); border-color: var(–red2); background: var(–red-glow); font-weight: 700; box-shadow: 0 0 8px rgba(255,34,68,0.4); animation: mode-pulse 0.5s infinite; }
-@keyframes mode-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-
-.heartbeat {
-display: flex;
-align-items: center;
-gap: 6px;
-padding: 4px 8px;
-background: var(–bg2);
-border: 1px solid var(–border);
-border-radius: 2px;
-margin-bottom: 5px;
-font-family: var(–mono);
-font-size: 9px;
-}
-.hb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(–green); animation: hb 1s infinite; }
-.heartbeat.degraded .hb-dot { background: var(–red); animation: hb-fast 0.3s infinite; }
-@keyframes hb { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-@keyframes hb-fast { 0%,100% { opacity: 1; } 50% { opacity: 0.1; } }
-.hb-text { color: var(–text2); }
-.hb-val { color: var(–green); }
-.heartbeat.degraded .hb-val { color: var(–red); }
-
-/* SPOOFING ALERT */
-.spoof-alert {
-padding: 4px 8px;
-background: rgba(170,68,255,0.08);
-border: 1px solid var(–purple2);
-border-radius: 2px;
-font-family: var(–mono);
-font-size: 9px;
-color: var(–purple);
-margin-bottom: 4px;
-display: none;
-}
-.spoof-alert.show { display: block; animation: spoof-flash 0.5s infinite; }
-@keyframes spoof-flash { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+/* scanlines */
+body:not(.exec)::after{content:’’;position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999;}
 </style>
 
 </head>
 <body>
+<div id="shell">
 
 <!-- TOP BAR -->
 
 <div id="topbar">
-  <div class="logo-block">
+  <div>
     <div class="logo">HYDRA</div>
-    <div>
-      <div class="logo-sub">Kernel Architecture Demonstrator v2.1</div>
-      <div class="logo-sub" style="color:var(--text3);">Patent Pending · USPTO Filed March 30, 2026 · M. Kistner</div>
-    </div>
+    <div class="logo-sub">Kernel Architecture Demonstrator · Patent Pending USPTO March 30 2026 · M.Kistner</div>
   </div>
-
-  <div class="topbar-center">
-    <div class="mode-chip active" id="chip-tactical" onclick="setViewMode('tactical')">Tactical C2</div>
-    <div class="mode-chip" id="chip-exec" onclick="setViewMode('exec')">Executive Briefing</div>
+  <div class="tb-center">
+    <div class="mc active" id="mc-tac" onclick="setMode('tac')">Tactical C2</div>
+    <div class="mc" id="mc-exe" onclick="setMode('exe')">Executive Briefing</div>
   </div>
-
-  <div class="topbar-right">
-    <div class="sys-stat">
-      <div class="sys-stat-val" id="stat-tracks">0</div>
-      <div class="sys-stat-lbl">TRACKS</div>
-    </div>
-    <div class="sys-stat">
-      <div class="sys-stat-val" id="stat-intercepts">0</div>
-      <div class="sys-stat-lbl">INTERCEPTS</div>
-    </div>
-    <div class="sys-stat">
-      <div class="sys-stat-val warn" id="stat-redundant">0</div>
-      <div class="sys-stat-lbl">REDUNDANT</div>
-    </div>
-    <div class="sys-stat">
-      <div class="sys-stat-val" id="stat-sensors">5/5</div>
-      <div class="sys-stat-lbl">SENSORS</div>
-    </div>
-    <div class="sys-stat">
-      <div class="sys-stat-val" id="stat-effectors">5/5</div>
-      <div class="sys-stat-lbl">EFFECTORS</div>
-    </div>
-    <div class="c2-status" id="c2-toggle" onclick="toggleC2()">
-      <div class="c2-dot" id="c2-dot"></div>
-      <div class="c2-text" id="c2-text">C2 NOMINAL</div>
+  <div class="tb-right">
+    <div class="ss"><div class="ss-v" id="st-tracks">0</div><div class="ss-l">TRACKS</div></div>
+    <div class="ss"><div class="ss-v" id="st-int">0</div><div class="ss-l">INTERCEPTS</div></div>
+    <div class="ss"><div class="ss-v warn" id="st-red">0</div><div class="ss-l">REDUNDANT</div></div>
+    <div class="ss"><div class="ss-v" id="st-sen">5/5</div><div class="ss-l">SENSORS</div></div>
+    <div class="ss"><div class="ss-v" id="st-eff">5/5</div><div class="ss-l">EFFECTORS</div></div>
+    <div class="c2btn" id="c2btn" onclick="toggleC2()">
+      <div class="c2dot" id="c2dot"></div>
+      <div class="c2txt" id="c2txt">C2 NOMINAL</div>
     </div>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- MIDDLE -->
 
-<div id="app">
+<div id="middle">
 
-  <!-- LEFT: SENSORS -->
+  <!-- SENSOR PANEL -->
 
-  <div class="panel" id="sensor-panel">
-    <div class="ph">
-      <div class="ph-title">Sensor Layer</div>
-      <div class="ph-badge" id="sensor-badge">5 ONLINE</div>
-    </div>
-    <div class="pc" id="sensor-list"></div>
+  <div class="panel" id="sp">
+    <div class="ph"><div class="pht">Sensor Layer</div><div class="phb" id="spb">5 ONLINE</div></div>
+    <div class="pc" id="slist"></div>
   </div>
 
-  <!-- CENTER: TACTICAL DISPLAY -->
+  <!-- TACTICAL -->
 
-  <div id="tactical-panel">
-    <div id="tac-header">
-      <div class="ph-title">Fused Tactical Picture · Kernel Display</div>
+  <div id="tp">
+    <div id="tph">
+      <div class="pht">Fused Tactical Picture · Kernel Display</div>
       <div style="display:flex;gap:6px;">
-        <div class="ph-badge" id="fusion-conf-badge">FUSION: IDLE</div>
-        <div class="ph-badge" id="roe-badge">ROE: ACTIVE</div>
+        <div class="phb" id="fcbadge">FUSION: IDLE</div>
+        <div class="phb" id="roebadge">ROE: ACTIVE</div>
       </div>
     </div>
-    <canvas id="tactical-canvas" onclick="canvasClick(event)"></canvas>
-
-```
-<!-- OVERLAYS -->
-<div class="tac-overlay" id="fusion-chips">
-  <div class="fchip on" id="fc-aesa">AESA</div>
-  <div class="fchip on" id="fc-eoir">EO/IR</div>
-  <div class="fchip on" id="fc-acou">ACOU</div>
-  <div class="fchip on" id="fc-rf">PASS-RF</div>
-  <div class="fchip on" id="fc-c2">C2-LINK</div>
-</div>
-<div class="tac-overlay" id="mode-banner">MODE: CENTRALIZED</div>
-<div class="tac-overlay" id="c2-overlay"></div>
-<div class="tac-overlay" id="c2-banner">⚠ C2 LINK LOST — LOCAL AUTONOMY ACTIVE</div>
-<div class="tac-overlay" id="tac-legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Inbound threat track</div>
-  <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid var(--amber);"></div>Assigned engagement</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Active effector</div>
-  <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div>Intercept vector</div>
-  <div class="legend-item"><div class="legend-line" style="background:var(--text3);border-top:2px dashed var(--text3);height:0"></div>Sensor coverage</div>
-</div>
-```
-
-  </div>
-
-  <!-- RIGHT: ARBITRATION -->
-
-  <div class="panel" id="arb-panel">
-    <div class="ph">
-      <div class="ph-title">Arbitration · Effectors</div>
-      <div class="ph-badge" id="arb-badge">MFC KERNEL</div>
+    <canvas id="tac" onclick="canvasClick(event)"></canvas>
+    <div class="ov" id="fchips">
+      <div class="fc on" id="fc-aesa">AESA</div>
+      <div class="fc on" id="fc-eoir">EO/IR</div>
+      <div class="fc on" id="fc-acou">ACOU</div>
+      <div class="fc on" id="fc-rf">PASS-RF</div>
+      <div class="fc on" id="fc-c2lnk">C2-LINK</div>
     </div>
-
-```
-<!-- AUTONOMY STATUS -->
-<div style="padding:6px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
-  <div class="heartbeat" id="heartbeat-display">
-    <div class="hb-dot"></div>
-    <div class="hb-text">C2 HEARTBEAT</div>
-    <div class="hb-val" id="hb-val">98ms</div>
-  </div>
-  <div class="auto-mode-display">
-    <div class="amd-title">Autonomy Mode</div>
-    <div class="amd-modes">
-      <div class="amd-mode active-central" id="am-central">CENTRAL</div>
-      <div class="amd-mode" id="am-guarded">GUARDED</div>
-      <div class="amd-mode" id="am-constrained">CONSTRD</div>
-      <div class="amd-mode" id="am-manual">MANUAL</div>
+    <div class="ov" id="modebanner">MODE: CENTRALIZED</div>
+    <div class="ov" id="c2ov"></div>
+    <div class="ov" id="c2ban">⚠ C2 LINK LOST — LOCAL AUTONOMY ACTIVE</div>
+    <div class="ov" id="spoofal">⚠ GHOST TRACK DETECTED · Multi-sensor validation FAILED · Track REJECTED</div>
+    <div class="ov" id="tacleg">
+      <div class="li"><div class="ld" style="background:var(--red)"></div>Inbound threat</div>
+      <div class="li"><div class="ld" style="background:transparent;border:2px solid var(--amber)"></div>Assigned</div>
+      <div class="li"><div class="ld" style="background:var(--green)"></div>Effector</div>
+      <div class="li"><div class="ll" style="background:var(--blue)"></div>Intercept vector</div>
     </div>
   </div>
-  <div class="spoof-alert" id="spoof-alert">⚠ GHOST TRACK DETECTED — Multi-sensor cross-validation FAILED — Track rejected</div>
-</div>
 
-<div class="pc" id="effector-list"></div>
+  <!-- ARB PANEL -->
 
-<!-- SCORE PANEL -->
-<div id="score-panel">
-  <div class="score-panel-title">Kernel Arbitration — Live Scoring</div>
-  <div id="score-rows"></div>
-</div>
-```
-
-  </div>
-
-  <!-- BOTTOM BAR -->
-
-  <div id="bottom-bar">
-
-```
-<!-- THREAT ENTRY -->
-<div id="threat-panel">
-  <div class="ph">
-    <div class="ph-title">Threat Entry</div>
-    <div class="ph-badge">OPERATOR INPUT</div>
-  </div>
-  <div class="threat-form">
-    <div class="form-row">
-      <div class="form-label">TYPE</div>
-      <select class="form-select" id="threat-type">
-        <option value="fpv">FPV Drone</option>
-        <option value="lm">Loitering Munition</option>
-        <option value="cm">Cruise Missile</option>
-        <option value="swarm">Drone Swarm ×5</option>
-        <option value="atgm">ATGM</option>
-        <option value="ballistic">Ballistic Missile</option>
-        <option value="ghost">Ghost/Spoofed</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-label">BRG</div>
-      <div class="range-wrap">
-        <input type="range" class="form-range" id="threat-bearing" min="0" max="360" value="0" oninput="updateBearing(this.value)">
-        <div class="range-val" id="bearing-val">000°</div>
+  <div class="panel" id="ap" style="border-right:none;">
+    <div class="ph"><div class="pht">Arbitration · Effectors</div><div class="phb" id="apb">MFC KERNEL</div></div>
+    <div style="padding:6px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div class="hbeat" id="hbeat"><div class="hbdot"></div><div class="hbt">C2 HEARTBEAT</div><div class="hbv" id="hbv">98ms</div></div>
+      <div class="amdisp">
+        <div class="amdt">Autonomy Mode</div>
+        <div class="amdmodes">
+          <div class="amdm ac" id="am-c">CENTRAL</div>
+          <div class="amdm" id="am-g">GUARDED</div>
+          <div class="amdm" id="am-co">CONSTRD</div>
+          <div class="amdm" id="am-m">MANUAL</div>
+        </div>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-label">SPD</div>
-      <div class="range-wrap">
-        <input type="range" class="form-range" id="threat-speed" min="1" max="10" value="4" oninput="updateSpeed(this.value)">
-        <div class="range-val" id="speed-val">MED</div>
+    <div class="pc" id="elist"></div>
+    <div id="scorearea">
+      <div class="sct">Kernel Arbitration — Live Scoring</div>
+      <div id="scorerows"></div>
+    </div>
+  </div>
+
+</div><!-- end middle -->
+
+<!-- BOTTOM -->
+
+<div id="bottom">
+
+  <!-- CONTROLS -->
+
+  <div id="controls">
+    <div class="cph">
+      <div class="pht">Threat Entry</div>
+      <div class="phb">OPERATOR INPUT</div>
+    </div>
+    <div class="cpc">
+      <div class="crow">
+        <div class="clbl">TYPE</div>
+        <select class="csel" id="ttype">
+          <option value="fpv">FPV Drone (fast/low)</option>
+          <option value="lm">Loitering Munition</option>
+          <option value="cm">Cruise Missile</option>
+          <option value="swarm">Drone Swarm ×5</option>
+          <option value="atgm">ATGM (high-Pk)</option>
+          <option value="ballistic">Ballistic Missile</option>
+          <option value="ghost">Ghost/Spoofed Track</option>
+        </select>
+      </div>
+      <div class="crow">
+        <div class="clbl">BEARING</div>
+        <div class="rw">
+          <input type="range" class="rng" id="tbrg" min="0" max="360" value="0" oninput="updBrg(this.value)">
+          <div class="rv" id="brgv">000°</div>
+        </div>
+      </div>
+      <div class="crow">
+        <div class="clbl">SPEED</div>
+        <div class="rw">
+          <input type="range" class="rng" id="tspd" min="1" max="10" value="4" oninput="updSpd(this.value)">
+          <div class="rv" id="spdv">MED</div>
+        </div>
+      </div>
+      <div class="crow">
+        <div class="clbl">SIGNAT.</div>
+        <div class="rw">
+          <input type="range" class="rng" id="tsig" min="1" max="10" value="6" oninput="updSig(this.value)">
+          <div class="rv" id="sigv">MED</div>
+        </div>
+      </div>
+      <div class="btns">
+        <button class="btn" onclick="doSpawn()">▶ Engage</button>
+        <button class="btn w" onclick="doWave()">⚡ Wave Attack</button>
+        <button class="btn w act" id="c2dbtn" onclick="toggleC2()">Degrade C2</button>
+        <button class="btn" onclick="doSpoof()">Spoof Track</button>
+        <button class="btn d" onclick="doReset()">✕ Reset</button>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-label">SIG</div>
-      <div class="range-wrap">
-        <input type="range" class="form-range" id="threat-sig" min="1" max="10" value="6" oninput="updateSig(this.value)">
-        <div class="range-val" id="sig-val">MED</div>
+  </div>
+
+  <!-- AUDIT LOG -->
+
+  <div id="audit">
+    <div class="cph">
+      <div class="pht">Audit &amp; Safety Log · Immutable · Cryptographically Sealed</div>
+      <div style="display:flex;gap:5px;">
+        <div class="phb" id="logbadge">0 EVENTS</div>
+        <div class="phb" style="color:var(--blue);border-color:var(--blue2);">SIGNED · ROE COMPLIANT</div>
       </div>
     </div>
-    <div class="action-btns">
-      <button class="btn" onclick="spawnThreat()">▶ Engage</button>
-      <button class="btn warn" onclick="spawnWave()">⚡ Wave</button>
-      <button class="btn warn" id="c2-btn" onclick="toggleC2()">Degrade C2</button>
-      <button class="btn" onclick="triggerSpoof()">Spoof</button>
-      <button class="btn danger" onclick="clearAll()">✕ Reset</button>
-    </div>
-  </div>
-</div>
-
-<!-- AUDIT LOG -->
-<div id="audit-panel">
-  <div class="ph">
-    <div class="ph-title">Audit &amp; Safety Log · Immutable · Cryptographically Sealed</div>
-    <div style="display:flex;gap:6px;">
-      <div class="ph-badge" id="log-badge">0 EVENTS</div>
-      <div class="ph-badge" style="color:var(--blue);border-color:var(--blue2);">SIGNED · ROE COMPLIANT</div>
-    </div>
-  </div>
-  <div id="audit-log"></div>
-</div>
-```
-
+    <div id="alog"></div>
   </div>
 
-</div>
+</div><!-- end bottom -->
+</div><!-- end shell -->
 
 <script>
-// ═══════════════════════════════════════════════
-// HYDRA KERNEL DEMONSTRATOR
-// Michael Kistner — The Endurance Project
-// Patent Pending USPTO March 30, 2026
-// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════
+// HYDRA KERNEL DEMONSTRATOR v3
+// Michael Kistner · The Endurance Project
+// Patent Pending USPTO March 30 2026
+// ═══════════════════════════════════════
 
-const S = {
-  threats: [],
-  sensors: [],
-  effectors: [],
-  c2Degraded: false,
-  autonomyMode: 'central', // central, guarded, constrained, manual
-  intercepts: 0,
-  redundant: 0,
-  logCount: 0,
-  tick: 0,
-  lastTime: 0,
-  canvas: null,
-  ctx: null,
-  W: 0, H: 0,
-  hbInterval: null,
-  hbVal: 98,
-  execMode: false,
+const S={
+  threats:[],sensors:[],effectors:[],
+  c2deg:false,autoMode:'central',
+  intercepts:0,redundant:0,logCount:0,
+  tick:0,lastTime:0,
+  canvas:null,ctx:null,W:0,H:0,
+  execMode:false,
 };
 
-// SENSOR DEFINITIONS
-const SENSOR_DEFS = [
-  { id: 'AESA', name: 'AESA Radar', type: 'ACTIVE RADAR', online: true, conf: 0.96, range: 0.85, tracks: 0, chipId: 'fc-aesa', color: '#00ff9d' },
-  { id: 'EOIR', name: 'EO/IR Array', type: 'ELECTRO-OPTICAL', online: true, conf: 0.88, range: 0.70, tracks: 0, chipId: 'fc-eoir', color: '#00b8ff' },
-  { id: 'ACOU', name: 'Acoustic Net', type: 'PASSIVE ACOUSTIC', online: true, conf: 0.74, range: 0.55, tracks: 0, chipId: 'fc-acou', color: '#aa44ff' },
-  { id: 'PASSRF', name: 'Passive RF', type: 'PASSIVE RF', online: true, conf: 0.81, range: 0.65, tracks: 0, chipId: 'fc-rf', color: '#ffaa00' },
-  { id: 'C2LINK', name: 'C2 Network', type: 'COMMAND LINK', online: true, conf: 0.99, range: 1.0, tracks: 0, chipId: 'fc-c2', color: '#00ffee' },
+const SDEFS=[
+  {id:'AESA',name:'AESA Radar',type:'ACTIVE RADAR',online:true,conf:.96,tracks:0,chip:'fc-aesa'},
+  {id:'EOIR',name:'EO/IR Array',type:'ELECTRO-OPTICAL',online:true,conf:.88,tracks:0,chip:'fc-eoir'},
+  {id:'ACOU',name:'Acoustic Net',type:'PASSIVE ACOUSTIC',online:true,conf:.74,tracks:0,chip:'fc-acou'},
+  {id:'PASSRF',name:'Passive RF',type:'PASSIVE RF',online:true,conf:.81,tracks:0,chip:'fc-rf'},
+  {id:'C2LNK',name:'C2 Network',type:'COMMAND LINK',online:true,conf:.99,tracks:0,chip:'fc-c2lnk'},
 ];
 
-// EFFECTOR DEFINITIONS
-const EFFECTOR_DEFS = [
-  { id: 'E1', name: '35mm Turret α', type: '35MM', x: 0.18, y: 0.78, ammo: 100, maxAmmo: 100, pk: 0.82, range: 0.24, mode: 'ready', assignedTo: null, engaging: false, autonomous: false, cost: 'LOW' },
-  { id: 'E2', name: 'CIWS / SeaRAM', type: 'CIWS', x: 0.50, y: 0.88, ammo: 100, maxAmmo: 100, pk: 0.91, range: 0.19, mode: 'ready', assignedTo: null, engaging: false, autonomous: false, cost: 'LOW' },
-  { id: 'E3', name: '35mm Turret β', type: '35MM', x: 0.80, y: 0.76, ammo: 100, maxAmmo: 100, pk: 0.80, range: 0.24, mode: 'ready', assignedTo: null, engaging: false, autonomous: false, cost: 'LOW' },
-  { id: 'E4', name: 'Missile Batt.', type: 'MSL', x: 0.34, y: 0.92, ammo: 8, maxAmmo: 8, pk: 0.97, range: 0.42, mode: 'ready', assignedTo: null, engaging: false, autonomous: false, cost: 'HIGH' },
-  { id: 'E5', name: 'EW Jammer', type: 'EW', x: 0.66, y: 0.90, ammo: 100, maxAmmo: 100, pk: 0.62, range: 0.32, mode: 'ready', assignedTo: null, engaging: false, autonomous: false, cost: 'LOW' },
+const EDEFS=[
+  {id:'E1',name:'35mm Turret α',type:'35MM',x:.18,y:.78,ammo:100,maxAmmo:100,pk:.82,range:.24,mode:'ready',assignedTo:null,engaging:false,auto:false},
+  {id:'E2',name:'CIWS / SeaRAM',type:'CIWS',x:.50,y:.88,ammo:100,maxAmmo:100,pk:.91,range:.19,mode:'ready',assignedTo:null,engaging:false,auto:false},
+  {id:'E3',name:'35mm Turret β',type:'35MM',x:.80,y:.76,ammo:100,maxAmmo:100,pk:.80,range:.24,mode:'ready',assignedTo:null,engaging:false,auto:false},
+  {id:'E4',name:'Missile Batt.',type:'MSL',x:.34,y:.92,ammo:8,maxAmmo:8,pk:.97,range:.42,mode:'ready',assignedTo:null,engaging:false,auto:false},
+  {id:'E5',name:'EW Jammer',type:'EW',x:.66,y:.90,ammo:100,maxAmmo:100,pk:.62,range:.32,mode:'ready',assignedTo:null,engaging:false,auto:false},
 ];
 
-// THREAT TYPE PROPERTIES
-const THREAT_PROPS = {
-  fpv:      { label: 'FPV DRONE', color: '#ff2244', speed: 0.35, lethality: 0.6, sigRCS: 0.3, icon: '◆' },
-  lm:       { label: 'LOITERING MUN', color: '#ff6600', speed: 0.22, lethality: 0.8, sigRCS: 0.5, icon: '▲' },
-  cm:       { label: 'CRUISE MISSILE', color: '#ff0044', speed: 0.45, lethality: 0.95, sigRCS: 0.7, icon: '➤' },
-  swarm:    { label: 'DRONE SWARM', color: '#ff4400', speed: 0.28, lethality: 0.85, sigRCS: 0.4, icon: '✦' },
-  atgm:     { label: 'ATGM', color: '#ffcc00', speed: 0.55, lethality: 0.92, sigRCS: 0.6, icon: '▸' },
-  ballistic:{ label: 'BALLISTIC', color: '#ff00aa', speed: 0.6, lethality: 0.99, sigRCS: 0.9, icon: '↓' },
-  ghost:    { label: 'GHOST/SPOOF', color: '#aa44ff', speed: 0.3, lethality: 0.0, sigRCS: 0.8, icon: '?' },
+const TPROPS={
+  fpv:{label:'FPV DRONE',color:'#ff2244',speed:.35,lethality:.6,icon:'◆'},
+  lm:{label:'LOITERING MUN',color:'#ff6600',speed:.22,lethality:.8,icon:'▲'},
+  cm:{label:'CRUISE MISSILE',color:'#ff0044',speed:.45,lethality:.95,icon:'➤'},
+  swarm:{label:'DRONE SWARM',color:'#ff4400',speed:.28,lethality:.85,icon:'✦'},
+  atgm:{label:'ATGM',color:'#ffcc00',speed:.55,lethality:.92,icon:'▸'},
+  ballistic:{label:'BALLISTIC',color:'#ff00aa',speed:.6,lethality:.99,icon:'↓'},
+  ghost:{label:'GHOST/SPOOF',color:'#aa44ff',speed:.3,lethality:0,icon:'?'},
 };
 
-let threatCounter = 0;
+let tc=0;
 
-function init() {
-  S.canvas = document.getElementById('tactical-canvas');
-  S.ctx = S.canvas.getContext('2d');
-  S.sensors = SENSOR_DEFS.map(d => ({...d}));
-  S.effectors = EFFECTOR_DEFS.map(d => ({...d}));
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+function init(){
+  S.canvas=document.getElementById('tac');
+  S.ctx=S.canvas.getContext('2d');
+  S.sensors=SDEFS.map(d=>({...d}));
+  S.effectors=EDEFS.map(d=>({...d}));
+  resize();
+  window.addEventListener('resize',resize);
   renderSensors();
   renderEffectors();
-  addLog('system', 'll-system', 'SYSTEM', 'HYDRA Kernel v2.1 initialized · All subsystems nominal · Awaiting threat data');
-  addLog('audit', 'll-audit', 'AUDIT', 'Cryptographic seal active · Log integrity monitoring enabled · ROE parameters loaded');
-  addLog('system', 'll-system', 'KERNEL', 'Sensor fusion engine online · Arbitration engine online · Autonomy framework standby');
-  startHeartbeat();
-  requestAnimationFrame(loop);
-}
-
-function resizeCanvas() {
-  const panel = document.getElementById('tactical-panel');
-  const header = document.getElementById('tac-header');
-  S.canvas.width = panel.offsetWidth;
-  S.canvas.height = panel.offsetHeight - header.offsetHeight;
-  S.W = S.canvas.width;
-  S.H = S.canvas.height;
-}
-
-// ── MAIN LOOP ──────────────────────────────────
-function loop(ts) {
-  const dt = Math.min((ts - S.lastTime) / 16.67, 3);
-  S.lastTime = ts;
-  S.tick++;
-  updateThreats(dt);
-  if (S.tick % 8 === 0) updateSensorMetrics();
-  draw();
-  if (S.tick % 15 === 0) updateTopStats();
-  requestAnimationFrame(loop);
-}
-
-// ── THREAT SPAWNING ────────────────────────────
-function spawnThreat() {
-  const type = document.getElementById('threat-type').value;
-  const bearing = parseInt(document.getElementById('threat-bearing').value);
-  const speedMult = parseInt(document.getElementById('threat-speed').value) / 5;
-  const sigMult = parseInt(document.getElementById('threat-sig').value) / 5;
-
-  if (type === 'ghost') { triggerSpoof(); return; }
-  if (type === 'swarm') { spawnWave(5); return; }
-
-  const props = THREAT_PROPS[type];
-  const rad = (bearing - 90) * Math.PI / 180;
-  const margin = 0.05;
-
-  // Entry point from bearing
-  let nx, ny;
-  const cos = Math.cos(rad), sin = Math.sin(rad);
-  if (Math.abs(cos) > Math.abs(sin)) {
-    nx = cos > 0 ? 1 - margin : margin;
-    ny = 0.5 - sin * (0.5 - margin) / Math.abs(cos);
-  } else {
-    ny = sin > 0 ? margin : 1 - margin;
-    nx = 0.5 + cos * (0.5 - margin) / Math.abs(sin);
-  }
-  ny = Math.max(margin, Math.min(0.6, ny));
-
-  createThreat(type, nx, ny, props.speed * speedMult, sigMult);
-}
-
-function createThreat(type, nx, ny, speed, sigMult) {
-  const props = THREAT_PROPS[type];
-  const id = `T${String(++threatCounter).padStart(3,'0')}`;
-
-  // Target toward defended zone
-  const tx = 0.25 + Math.random() * 0.5;
-  const ty = 0.75 + Math.random() * 0.15;
-  const dx = tx - nx, dy = ty - ny;
-  const len = Math.sqrt(dx*dx + dy*dy);
-
-  const t = {
-    id, type,
-    nx, ny,
-    targetX: tx, targetY: ty,
-    vx: (dx/len) * speed * 0.008,
-    vy: (dy/len) * speed * 0.008,
-    color: props.color,
-    label: props.label,
-    icon: props.icon,
-    lethality: props.lethality,
-    sigRCS: props.sigRCS * sigMult,
-    fused: false,
-    fusedConf: 0,
-    classified: false,
-    assignedEffector: null,
-    intercepted: false,
-    flash: 0,
-    age: 0,
-    sensorContribs: [],
-    isGhost: type === 'ghost',
-    rejected: false,
-    engagementReason: '',
-  };
-
-  S.threats.push(t);
-  addLog('sensor', 'll-sensor', 'DETECT', `Raw track acquired · ID:${id} · Type:${props.label} · Bearing:${Math.round(Math.atan2(t.vx, t.vy)*180/Math.PI+180)}° · Pos:(${(nx*100).toFixed(0)},${(ny*100).toFixed(0)})`);
-
-  // Simulate sensor detection pipeline
-  setTimeout(() => runFusion(t), 300 + Math.random()*300);
-}
-
-function spawnWave(count) {
-  const n = count || (3 + Math.floor(Math.random() * 4));
-  addLog('arb', 'll-arb', 'WARNING', `⚠ SATURATION ATTACK DETECTED · ${n} simultaneous tracks · Activating multi-threat arbitration · Endurance management engaged`);
-  const types = ['fpv', 'lm', 'fpv', 'cm', 'fpv', 'atgm', 'lm'];
-  for (let i = 0; i < n; i++) {
-    setTimeout(() => {
-      const bearing = Math.random() * 360;
-      const type = types[i % types.length];
-      const props = THREAT_PROPS[type];
-      const rad = (bearing - 90) * Math.PI / 180;
-      const nx = 0.5 + Math.cos(rad) * (0.45 + Math.random()*0.05);
-      const ny = 0.5 + Math.sin(rad) * (0.45 + Math.random()*0.05);
-      createThreat(type, Math.max(0.02, Math.min(0.98, nx)), Math.max(0.02, Math.min(0.55, ny)), props.speed, 1);
-    }, i * 400 + Math.random()*200);
-  }
-}
-
-// ── SENSOR FUSION PIPELINE ─────────────────────
-function runFusion(t) {
-  if (t.intercepted) return;
-
-  // Ghost track — simulate multi-sensor disagreement and rejection
-  if (t.isGhost) {
-    addLog('fusion', 'll-fusion', 'FUSION', `Track ${t.id} — Multi-sensor cross-validation INITIATED · Checking ${getOnlineSensors()} sensors`);
-    setTimeout(() => {
-      t.rejected = true;
-      t.intercepted = true;
-      document.getElementById('spoof-alert').classList.add('show');
-      addLog('fusion', 'll-fusion', 'FUSION', `⚠ Track ${t.id} REJECTED · Sensor disagreement threshold exceeded · AESA/EO/IR correlation FAILED · Likely SPOOFED or ghost track`);
-      addLog('audit', 'll-audit', 'AUDIT', `Spoofed track rejection logged · ID:${t.id} · Hash:${rndHash()}`);
-      setTimeout(() => {
-        document.getElementById('spoof-alert').classList.remove('show');
-        S.threats = S.threats.filter(x => x.id !== t.id);
-      }, 3000);
-    }, 600);
-    return;
-  }
-
-  // Determine which sensors contribute
-  const online = S.sensors.filter(s => s.online);
-  const contributing = online.filter(() => Math.random() > 0.2);
-  if (contributing.length === 0) contributing.push(online[0]);
-
-  t.sensorContribs = contributing.map(s => s.id);
-
-  // Fused confidence = weighted combination of contributing sensors
-  const fusedConf = Math.min(0.99,
-    contributing.reduce((acc, s) => acc + s.conf, 0) / contributing.length
-    * (0.85 + Math.random() * 0.2)
-    * (contributing.length / online.length * 0.3 + 0.7)
-  );
-
-  t.fusedConf = fusedConf;
-  t.fused = true;
-  t.classified = true;
-
-  // Pulse contributing sensor nodes
-  contributing.forEach(s => {
-    s.tracks++;
-    const el = document.querySelector(`[data-sensor="${s.id}"]`);
-    if (el) { el.classList.add('pulsing'); setTimeout(() => el.classList.remove('pulsing'), 400); }
-  });
-
-  addLog('fusion', 'll-fusion', 'FUSION',
-    `Track ${t.id} FUSED · Conf:${(fusedConf*100).toFixed(0)}% · Sensors:[${t.sensorContribs.join(',')}] · TPI:${(t.lethality*fusedConf*100).toFixed(0)} · Class:${t.label}`);
-
-  // Update fusion confidence display
-  const activeTracks = S.threats.filter(x => !x.intercepted && x.fused);
-  if (activeTracks.length > 0) {
-    const avg = activeTracks.reduce((a,x) => a+x.fusedConf, 0) / activeTracks.length;
-    document.getElementById('fusion-conf-badge').textContent = `FUSION: ${(avg*100).toFixed(0)}%`;
-  }
-
-  setTimeout(() => runArbitration(t), 250 + Math.random()*200);
-}
-
-// ── ARBITRATION ENGINE ─────────────────────────
-function runArbitration(t) {
-  if (t.intercepted) return;
-
-  const tx = t.nx, ty = t.ny;
-
-  // Score all effectors
-  const scores = S.effectors.map(e => {
-    if (e.ammo <= 0) return { e, score: -1, reason: 'NO AMMO', pk: 0, range: 0, ammoFactor: 0, colFactor: 0 };
-
-    const dist = Math.sqrt((e.x - tx)**2 + (e.y - ty)**2);
-    if (dist > e.range) return { e, score: -1, reason: 'OUT OF RANGE', pk: 0, range: dist, ammoFactor: 0, colFactor: 0 };
-
-    // Already assigned to something
-    if (e.assignedTo && !S.c2Degraded) return { e, score: -1, reason: 'TASKED', pk: 0, range: dist, ammoFactor: 0, colFactor: 0 };
-
-    // Endurance management - conserve missiles for high-lethality threats
-    const ammoFactor = e.type === 'MSL' ? (t.lethality > 0.85 ? 1.2 : 0.3) : 1.0;
-
-    // Collateral risk (lower is better - penalize high collateral)
-    const colRisk = e.type === 'CIWS' ? 0.1 : (e.type === 'MSL' ? 0.3 : 0.15);
-    const colFactor = 1 - colRisk;
-
-    // Confidence gate - don't engage below threshold
-    if (t.fusedConf < 0.55 && S.autonomyMode !== 'central') {
-      return { e, score: -1, reason: 'CONF<THRESHOLD', pk: 0, range: dist, ammoFactor: 0, colFactor: 0 };
+  log('sy','lsy','SYSTEM','HYDRA Kernel v3.0 initialized · All subsystems nominal · Awaiting threat data');
+  log('au','lau','AUDIT','Cryptographic seal active · Log integrity monitoring enabled · ROE parameters loaded');
+  setInterval(()=>{
+    if(!S.c2deg){
+      const v=80+Math.floor(Math.random()*40);
+      const el=document.getElementById('hbv');
+      if(el)el.textContent=v+'ms';
     }
-
-    const score = e.pk * ammoFactor * colFactor * t.fusedConf / (dist + 0.05);
-
-    return {
-      e, score,
-      pk: e.pk, range: dist.toFixed(3),
-      ammoFactor: ammoFactor.toFixed(2),
-      colFactor: colFactor.toFixed(2),
-      reason: 'ELIGIBLE'
-    };
-  });
-
-  const eligible = scores.filter(s => s.score > 0).sort((a,b) => b.score - a.score);
-
-  // Update score display
-  renderScores(scores, eligible[0]?.e?.id);
-
-  if (eligible.length === 0) {
-    addLog('arb', 'll-arb', 'ARB', `⚠ NO ELIGIBLE EFFECTOR for ${t.id} · All effectors out of range or tasked · Escalating advisory`);
-    return;
-  }
-
-  const best = eligible[0];
-  const wasAlreadyAssigned = best.e.assignedTo !== null;
-  if (wasAlreadyAssigned) S.redundant++;
-
-  best.e.assignedTo = t.id;
-  best.e.mode = 'assigned';
-  t.assignedEffector = best.e.id;
-  best.e.autonomous = S.c2Degraded;
-
-  const modeStr = S.c2Degraded ? `${S.autonomyMode.toUpperCase()}-AUTONOMOUS` : 'CENTRALIZED';
-  t.engagementReason = `Pk:${(best.e.pk*100).toFixed(0)}% · Ammo:${best.ammoFactor}× · Col:${best.colFactor} · Score:${best.score.toFixed(3)}`;
-
-  addLog('arb', 'll-arb', 'ASSIGN',
-    `${t.id} → ${best.e.name} · ${t.engagementReason} · Mode:${modeStr}`);
-
-  renderEffectors();
-  setTimeout(() => executeEngagement(t, best.e), 500 + Math.random()*500);
+  },800);
+  requestAnimationFrame(loop);
 }
 
-function renderScores(scores, winnerId) {
-  const container = document.getElementById('score-rows');
-  const relevant = scores.filter(s => s.score !== -1 || s.reason !== 'OUT OF RANGE').slice(0,5);
+function resize(){
+  const tp=document.getElementById('tp');
+  const tph=document.getElementById('tph');
+  S.canvas.width=tp.offsetWidth;
+  S.canvas.height=tp.offsetHeight-tph.offsetHeight;
+  S.W=S.canvas.width;S.H=S.canvas.height;
+}
 
-  if (relevant.length === 0) {
-    container.innerHTML = '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);padding:4px;">No active engagements</div>';
+function loop(ts){
+  const dt=Math.min((ts-S.lastTime)/16.67,3);
+  S.lastTime=ts;S.tick++;
+  S.threats.forEach(t=>{
+    if(t.intercepted)return;
+    t.nx+=t.vx*dt;t.ny+=t.vy*dt;t.age++;
+    if(t.flash>0)t.flash=Math.max(0,t.flash-.05*dt);
+    if(t.ny>.97&&!t.intercepted){
+      t.intercepted=true;
+      log('au','lau','LEAKER',`⚠ LEAKER · ${t.id} penetrated defended area · Hash:${rh()}`);
+      setTimeout(()=>{S.threats=S.threats.filter(x=>x.id!==t.id);},600);
+    }
+  });
+  if(S.tick%8===0){
+    const active=S.threats.filter(t=>!t.intercepted).length;
+    S.sensors.forEach(s=>{
+      if(!s.online)return;
+      s.tracks=Math.min(active,Math.floor(active*(0.6+Math.random()*.4)));
+      const el=document.querySelector(`.tc-${s.id}`);
+      if(el)el.textContent=s.tracks;
+    });
+  }
+  draw();
+  if(S.tick%15===0)updateStats();
+  requestAnimationFrame(loop);
+}
+
+function makeTrack(type,nx,ny,speed){
+  const props=TPROPS[type];
+  const id=`T${String(++tc).padStart(3,'0')}`;
+  const tx=.25+Math.random()*.5,ty=.75+Math.random()*.15;
+  const dx=tx-nx,dy=ty-ny,len=Math.sqrt(dx*dx+dy*dy);
+  return{
+    id,type,nx,ny,vx:(dx/len)*speed*.008,vy:(dy/len)*speed*.008,
+    color:props.color,label:props.label,lethality:props.lethality,
+    fused:false,fusedConf:0,classified:false,
+    assignedEffector:null,intercepted:false,flash:0,age:0,
+    sensorContribs:[],isGhost:type==='ghost',rejected:false,
+  };
+}
+
+function spawnTrack(type,nx,ny,speed){
+  const t=makeTrack(type,nx,ny,speed);
+  S.threats.push(t);
+  log('se','ls','DETECT',`Raw track · ID:${t.id} · ${t.label} · Pos:(${(nx*100).toFixed(0)},${(ny*100).toFixed(0)})`);
+  setTimeout(()=>fuse(t),300+Math.random()*300);
+}
+
+function fuse(t){
+  if(t.intercepted)return;
+  if(t.isGhost){
+    log('fu','lf','FUSION',`Track ${t.id} — Multi-sensor cross-validation FAIL · AESA/EO-IR disagreement · GHOST TRACK`);
+    setTimeout(()=>{
+      t.rejected=true;t.intercepted=true;
+      const el=document.getElementById('spoofal');
+      if(el){el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500);}
+      log('au','lau','AUDIT',`Spoofed track rejected · ${t.id} · Hash:${rh()}`);
+      setTimeout(()=>{S.threats=S.threats.filter(x=>x.id!==t.id);},3000);
+    },600);
     return;
   }
+  const online=S.sensors.filter(s=>s.online);
+  const contrib=online.filter(()=>Math.random()>.2);
+  if(contrib.length===0&&online.length>0)contrib.push(online[0]);
+  t.sensorContribs=contrib.map(s=>s.id);
+  t.fusedConf=Math.min(.99,contrib.reduce((a,s)=>a+s.conf,0)/(contrib.length||1)*(0.85+Math.random()*.2));
+  t.fused=true;t.classified=true;
+  contrib.forEach(s=>{
+    s.tracks++;
+    const el=document.querySelector(`[data-sid="${s.id}"]`);
+    if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),400);}
+  });
+  log('fu','lf','FUSION',`Track ${t.id} FUSED · Conf:${(t.fusedConf*100).toFixed(0)}% · Sensors:[${t.sensorContribs.join(',')}] · Class:${t.label}`);
+  const ft=S.threats.filter(x=>!x.intercepted&&x.fused);
+  if(ft.length>0){
+    const avg=ft.reduce((a,x)=>a+x.fusedConf,0)/ft.length;
+    document.getElementById('fcbadge').textContent=`FUSION: ${(avg*100).toFixed(0)}%`;
+  }
+  setTimeout(()=>arb(t),250+Math.random()*200);
+}
 
-  const maxScore = Math.max(...relevant.map(s => Math.max(0, s.score)));
+function arb(t){
+  if(t.intercepted)return;
+  const tx=t.nx,ty=t.ny;
+  const scores=S.effectors.map(e=>{
+    if(e.ammo<=0)return{e,score:-1,reason:'NO AMMO'};
+    const dist=Math.sqrt((e.x-tx)**2+(e.y-ty)**2);
+    if(dist>e.range)return{e,score:-1,reason:'OUT OF RANGE'};
+    if(e.assignedTo&&!S.c2deg)return{e,score:-1,reason:'TASKED'};
+    if(t.fusedConf<.55&&S.autoMode!=='central')return{e,score:-1,reason:'CONF<THRESH'};
+    const ammoF=e.type==='MSL'?(t.lethality>.85?1.2:.3):1.0;
+    const colF=e.type==='CIWS'?.9:(e.type==='MSL'?.7:.85);
+    const score=e.pk*ammoF*colF*t.fusedConf/(dist+.05);
+    return{e,score,reason:'ELIGIBLE',ammoF:ammoF.toFixed(2),colF:colF.toFixed(2)};
+  });
+  const elig=scores.filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
+  renderScores(scores,elig[0]?.e?.id);
+  if(elig.length===0){
+    log('ar','la','ARB',`⚠ No eligible effector for ${t.id} · All out of range or tasked`);
+    return;
+  }
+  const best=elig[0];
+  if(best.e.assignedTo)S.redundant++;
+  best.e.assignedTo=t.id;best.e.mode='assigned';
+  t.assignedEffector=best.e.id;best.e.auto=S.c2deg;
+  const mstr=S.c2deg?`${S.autoMode.toUpperCase()}-AUTO`:'CENTRALIZED';
+  log('ar','la','ASSIGN',`${t.id} → ${best.e.name} · Pk:${(best.e.pk*100).toFixed(0)}% · Score:${best.score.toFixed(3)} · Mode:${mstr}`);
+  renderEffectors();
+  setTimeout(()=>engage(t,best.e),500+Math.random()*500);
+}
 
-  container.innerHTML = relevant.map(s => {
-    const isWinner = s.e.id === winnerId;
-    const pct = maxScore > 0 ? (Math.max(0, s.score) / maxScore * 100) : 0;
-    return `
-      <div class="score-row ${isWinner ? 'winner' : ''}">
-        <div class="score-name">${s.e.name}</div>
-        <div style="font-family:var(--mono);font-size:8px;color:var(--text3);min-width:50px;">${s.reason}</div>
-        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${pct}%"></div></div>
-        <div class="score-val">${s.score > 0 ? s.score.toFixed(3) : '—'}</div>
-        ${isWinner ? '<div class="score-winner-icon">✓</div>' : '<div style="width:10px"></div>'}
+function engage(t,e){
+  if(t.intercepted)return;
+  e.mode='engaging';e.engaging=true;
+  renderEffectors();
+  log('en','le','ENGAGE',`${e.name} FIRING on ${t.id} · ROE: AUTHORIZED · Debris model: CLEAR`);
+  setTimeout(()=>{
+    const hit=Math.random()<(e.pk*(e.auto?.88:1));
+    t.intercepted=true;t.flash=1.0;
+    if(hit){
+      S.intercepts++;
+      const cost=e.type==='MSL'?1:Math.floor(3+Math.random()*6);
+      e.ammo=Math.max(0,e.ammo-cost);
+      log('en','le','KILL',`✓ ${t.id} INTERCEPTED · ${e.name} · Rounds: ${cost} · Remaining: ${e.ammo}`);
+      log('au','lau','AUDIT',`Engagement sealed · ${t.id} · Auth:${S.c2deg?'LOCAL-AUTO':'CENTRAL-C2'} · Hash:${rh()}`);
+    }else{
+      log('en','le','MISS',`✗ ${t.id} MISS · ${e.name} · Re-engagement initiated`);
+    }
+    e.assignedTo=null;e.engaging=false;e.mode='ready';e.auto=false;
+    renderEffectors();
+    setTimeout(()=>{S.threats=S.threats.filter(x=>x.id!==t.id);},700);
+  },700+Math.random()*600);
+}
+
+// DRAW
+function draw(){
+  const ctx=S.ctx,W=S.W,H=S.H;
+  ctx.clearRect(0,0,W,H);
+  // grid
+  ctx.save();
+  ctx.strokeStyle=S.execMode?'rgba(0,0,0,.06)':'rgba(26,51,72,.4)';
+  ctx.lineWidth=.5;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // radar sweep
+  if(!S.execMode){
+    const angle=(S.tick*.006)%(Math.PI*2);
+    const g=ctx.createConicGradient(angle,W/2,H/2);
+    g.addColorStop(0,'rgba(0,255,157,.05)');g.addColorStop(.08,'rgba(0,255,157,0)');g.addColorStop(1,'rgba(0,255,157,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(W/2,H/2,Math.max(W,H),0,Math.PI*2);ctx.fill();
+  }
+  ctx.restore();
+  // defended zone
+  ctx.save();
+  ctx.strokeStyle=S.execMode?'rgba(0,100,68,.3)':'rgba(0,255,157,.1)';
+  ctx.lineWidth=1;ctx.setLineDash([6,4]);
+  ctx.strokeRect(W*.08,H*.65,W*.84,H*.28);
+  ctx.fillStyle=S.execMode?'rgba(0,100,68,.04)':'rgba(0,255,157,.03)';
+  ctx.fillRect(W*.08,H*.65,W*.84,H*.28);
+  ctx.setLineDash([]);
+  ctx.font=`9px 'Share Tech Mono'`;
+  ctx.fillStyle=S.execMode?'rgba(0,100,68,.5)':'rgba(0,255,157,.35)';
+  ctx.textAlign='center';
+  ctx.fillText('DEFENDED AREA · CRITICAL INFRASTRUCTURE',W/2,H*.68);
+  ctx.restore();
+  // effector ranges
+  S.effectors.forEach(e=>{
+    const ex=e.x*W,ey=e.y*H,r=e.range*Math.min(W,H)*.9;
+    ctx.save();
+    if(e.engaging){ctx.strokeStyle='rgba(255,34,68,.3)';ctx.lineWidth=1.5;}
+    else if(e.mode==='assigned'){ctx.strokeStyle='rgba(255,170,0,.2)';ctx.lineWidth=1;}
+    else{ctx.strokeStyle=S.execMode?'rgba(0,100,68,.12)':'rgba(0,255,157,.07)';ctx.lineWidth=.5;}
+    ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(ex,ey,r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.restore();
+  });
+  // fusion lines
+  const ft=S.threats.filter(t=>t.fused&&!t.intercepted);
+  if(ft.length>0){
+    const cx=W/2,cy=H*.62;
+    ft.forEach(t=>{
+      ctx.save();
+      ctx.strokeStyle='rgba(170,68,255,.12)';ctx.lineWidth=.5;ctx.setLineDash([2,4]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(t.nx*W,t.ny*H);ctx.stroke();
+      ctx.setLineDash([]);ctx.restore();
+    });
+    ctx.save();
+    const pr=6+Math.sin(S.tick*.1)*2;
+    ctx.strokeStyle='rgba(170,68,255,.5)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(cx,cy,pr,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(170,68,255,.2)';ctx.fill();
+    ctx.font=`8px 'Share Tech Mono'`;ctx.fillStyle='rgba(170,68,255,.7)';ctx.textAlign='center';
+    ctx.fillText('KERNEL',cx,cy+16);
+    ctx.restore();
+  }
+  // intercept vectors
+  S.threats.forEach(t=>{
+    if(!t.fused||t.intercepted||!t.assignedEffector)return;
+    const e=S.effectors.find(x=>x.id===t.assignedEffector);
+    if(!e||!e.engaging)return;
+    ctx.save();
+    ctx.strokeStyle=S.execMode?'rgba(0,68,136,.7)':'rgba(0,184,255,.7)';
+    ctx.lineWidth=1.5;ctx.setLineDash([8,4]);
+    ctx.beginPath();ctx.moveTo(e.x*W,e.y*H);ctx.lineTo(t.nx*W,t.ny*H);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font=`8px 'Share Tech Mono'`;ctx.fillStyle=S.execMode?'rgba(0,68,136,.8)':'rgba(0,184,255,.8)';
+    ctx.textAlign='center';
+    ctx.fillText('INTERCEPT',(e.x*W+t.nx*W)/2,(e.y*H+t.ny*H)/2-4);
+    ctx.restore();
+  });
+  // threats
+  S.threats.forEach(t=>{
+    if(t.rejected&&t.intercepted)return;
+    const x=t.nx*W,y=t.ny*H;
+    ctx.save();
+    if(t.flash>0){ctx.globalAlpha=t.flash;ctx.beginPath();ctx.arc(x,y,24*t.flash,0,Math.PI*2);ctx.fillStyle=t.color+'44';ctx.fill();ctx.globalAlpha=1;}
+    if(t.intercepted){ctx.restore();return;}
+    ctx.strokeStyle=t.color+'44';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-t.vx*W*30,y-t.vy*H*30);ctx.stroke();
+    ctx.beginPath();ctx.arc(x,y,t.fused?6:4,0,Math.PI*2);ctx.fillStyle=t.color;ctx.fill();
+    if(t.fused){
+      const pr=10+Math.sin(S.tick*.12+tc)*3;
+      ctx.strokeStyle=t.color+'66';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,pr,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.font=`bold 9px 'Share Tech Mono'`;ctx.fillStyle=t.color;ctx.textAlign='left';
+    ctx.fillText(t.id,x+9,y-3);
+    if(t.classified){
+      ctx.font=`8px 'Share Tech Mono'`;ctx.fillStyle=t.color+'aa';
+      ctx.fillText(t.label,x+9,y+7);
+      ctx.fillText(`${(t.fusedConf*100).toFixed(0)}%`,x+9,y+16);
+    }
+    ctx.restore();
+  });
+  // effectors
+  S.effectors.forEach(e=>{
+    const x=e.x*W,y=e.y*H,s=10;
+    ctx.save();
+    let col=S.execMode?'rgba(0,100,68,.9)':'#00ff9d';
+    if(e.engaging)col='#ff2244';
+    else if(e.mode==='assigned')col='#ffaa00';
+    else if(e.auto)col='#aa44ff';
+    else if(e.ammo<=0)col='#3a5566';
+    ctx.strokeStyle=col;ctx.fillStyle=col+'22';ctx.lineWidth=e.engaging?2.5:1.5;
+    ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s,y);ctx.lineTo(x,y+s);ctx.lineTo(x-s,y);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();
+    if(e.engaging){
+      const ep=16+Math.sin(S.tick*.25)*5;
+      ctx.strokeStyle='#ff224444';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,ep,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.font=`8px 'Share Tech Mono'`;ctx.fillStyle=col;ctx.textAlign='left';
+    ctx.fillText(e.name.split(' ').slice(-1)[0],x+14,y+3);
+    ctx.restore();
+  });
+}
+
+function renderSensors(){
+  const list=document.getElementById('slist');
+  list.innerHTML='';
+  S.sensors.forEach(s=>{
+    const st=s.online?(s.conf>.8?'on':'deg'):'off';
+    const stlbl=s.online?(s.conf>.8?'ONLINE':'DEGRADED'):'OFFLINE';
+    const bcolor=s.conf>.8?'var(--green)':(s.conf>.5?'var(--amber)':'var(--red)');
+    const d=document.createElement('div');
+    d.className=`snode ${st}`;d.setAttribute('data-sid',s.id);d.onclick=()=>toggleSensor(s.id);
+    d.innerHTML=`
+      <div class="sn-hdr"><div class="sn-name">${s.name}</div><div class="sn-st ${st}">${stlbl}</div></div>
+      <div class="sn-type">${s.type}</div>
+      <div class="sn-m">
+        <div class="sn-box"><div class="sn-bv g tc-${s.id}">${s.tracks}</div><div class="sn-bl">TRACKS</div></div>
+        <div class="sn-box"><div class="sn-bv ${s.conf>.8?'g':'a'}">${(s.conf*100).toFixed(0)}%</div><div class="sn-bl">CONF</div></div>
+        <div class="sn-box"><div class="sn-bv ${s.online?'g':'a'}">${s.online?'UP':'DOWN'}</div><div class="sn-bl">STATUS</div></div>
       </div>
+      <div class="cbar"><div class="cbfill" style="width:${s.conf*100}%;background:${bcolor}"></div></div>
     `;
+    list.appendChild(d);
+  });
+  const n=S.sensors.filter(s=>s.online).length;
+  const b=document.getElementById('spb');
+  b.textContent=`${n} ONLINE`;
+  b.className=`phb${n<3?' crit':n<5?' warn':''}`;
+}
+
+function renderEffectors(){
+  const list=document.getElementById('elist');
+  list.innerHTML='';
+  S.effectors.forEach(e=>{
+    const mc=e.engaging?'engaging':(e.mode==='assigned'?'assigned':(e.ammo<=0?'offline':'ready'));
+    const bc=e.engaging?'be':(e.auto?'bau':(e.mode==='assigned'?'ba':(e.ammo<=0?'bo':'br')));
+    const bt=e.engaging?'ENGAGING':(e.auto?'AUTONOMOUS':(e.mode==='assigned'?'ASSIGNED':(e.ammo<=0?'DEPLETED':'READY')));
+    const ac=e.ammo>60?'ahi':(e.ammo>25?'ami':'alo');
+    const ap=(e.ammo/e.maxAmmo*100);
+    const pkc=e.pk>.88?'var(--green)':(e.pk>.75?'var(--blue)':'var(--amber)');
+    list.innerHTML+=`
+      <div class="ecard ${mc}${e.auto?' auto':''}">
+        <div class="ec-hdr"><div class="ec-name">${e.name}</div><div class="ebadge ${bc}">${bt}</div></div>
+        <div class="ec-stats">
+          <div class="ec-s"><div class="ec-sv" style="color:${pkc}">${(e.pk*100).toFixed(0)}%</div><div class="ec-sl">Pk</div></div>
+          <div class="ec-s"><div class="ec-sv" style="color:var(--blue)">${(e.range*100).toFixed(0)}km</div><div class="ec-sl">RANGE</div></div>
+          <div class="ec-s"><div class="ec-sv" style="color:${e.ammo<20?'var(--red)':'var(--text)'}">${e.type==='MSL'?e.ammo+'rnd':e.ammo+'%'}</div><div class="ec-sl">AMMO</div></div>
+        </div>
+        ${e.assignedTo?`<div style="font-family:var(--mono);font-size:8px;color:var(--amber);margin-top:3px;">→ TGT: ${e.assignedTo}</div>`:''}
+        <div class="abar"><div class="afill ${ac}" style="width:${ap}%"></div></div>
+      </div>`;
+  });
+  const n=S.effectors.filter(e=>e.ammo>0).length;
+  const b=document.getElementById('apb');
+  b.textContent=`${n}/5 READY`;
+  b.className=`phb${n<2?' crit':n<4?' warn':''}`;
+}
+
+function renderScores(scores,winnerId){
+  const c=document.getElementById('scorerows');
+  const rel=scores.filter(s=>s.score!==-1||s.reason!=='OUT OF RANGE').slice(0,5);
+  if(!rel.length){c.innerHTML='<div style="font-family:var(--mono);font-size:9px;color:var(--text3);padding:3px;">No active engagements</div>';return;}
+  const mx=Math.max(...rel.map(s=>Math.max(0,s.score)));
+  c.innerHTML=rel.map(s=>{
+    const win=s.e.id===winnerId;
+    const pct=mx>0?(Math.max(0,s.score)/mx*100):0;
+    return`<div class="srow${win?' win':''}">
+      <div class="sn">${s.e.name}</div>
+      <div class="sr">${s.reason}</div>
+      <div class="sbw"><div class="sbf" style="width:${pct}%"></div></div>
+      <div class="sv">${s.score>0?s.score.toFixed(3):'—'}</div>
+      ${win?'<div class="swi">✓</div>':'<div style="width:10px"></div>'}
+    </div>`;
   }).join('');
 }
 
-// ── ENGAGEMENT EXECUTION ───────────────────────
-function executeEngagement(t, e) {
-  if (t.intercepted) return;
-  e.mode = 'engaging';
-  e.engaging = true;
-  renderEffectors();
-  addLog('engage', 'll-engage', 'ENGAGE', `${e.name} FIRING on ${t.id} · Round away · Debris model: CLEAR · ROE: AUTHORIZED`);
-
-  setTimeout(() => {
-    const pkMod = e.autonomous ? 0.88 : 1.0; // Slight Pk reduction in autonomous mode
-    const hit = Math.random() < (e.pk * pkMod);
-    t.intercepted = true;
-    t.flash = 1.0;
-
-    if (hit) {
-      S.intercepts++;
-      const ammoCost = e.type === 'MSL' ? 1 : Math.floor(3 + Math.random()*6);
-      e.ammo = Math.max(0, e.ammo - ammoCost);
-      addLog('engage', 'll-engage', 'KILL', `✓ ${t.id} INTERCEPTED · ${e.name} · Pk achieved · Rounds expended: ${ammoCost} · Remaining: ${e.ammo}`);
-      addLog('audit', 'll-audit', 'AUDIT', `Engagement sealed · ${t.id} · Auth:${S.c2Degraded ? 'LOCAL-AUTONOMY' : 'CENTRAL-C2'} · ROE:COMPLIANT · Hash:${rndHash()}`);
-    } else {
-      addLog('engage', 'll-engage', 'MISS', `✗ ${t.id} MISS · ${e.name} · Re-engagement initiated`);
-    }
-
-    e.assignedTo = null;
-    e.engaging = false;
-    e.mode = e.ammo > 0 ? 'ready' : 'ready';
-    e.autonomous = false;
-    renderEffectors();
-
-    setTimeout(() => { S.threats = S.threats.filter(x => x.id !== t.id); }, 700);
-  }, 700 + Math.random()*600);
-}
-
-// ── MOVEMENT ──────────────────────────────────
-function updateThreats(dt) {
-  S.threats.forEach(t => {
-    if (t.intercepted || t.rejected) return;
-    t.nx += t.vx * dt;
-    t.ny += t.vy * dt;
-    t.age++;
-    if (t.flash > 0) t.flash = Math.max(0, t.flash - 0.05 * dt);
-    if (t.ny > 0.97 && !t.intercepted) {
-      t.intercepted = true;
-      addLog('audit', 'll-audit', 'LEAKER', `⚠ LEAKER · ${t.id} penetrated defended area · Defense failure logged · Hash:${rndHash()}`);
-      setTimeout(() => { S.threats = S.threats.filter(x => x.id !== t.id); }, 600);
-    }
-  });
-}
-
-// ── DRAWING ────────────────────────────────────
-function draw() {
-  const ctx = S.ctx;
-  const W = S.W, H = S.H;
-  ctx.clearRect(0, 0, W, H);
-
-  drawBackground(ctx, W, H);
-  drawDefendedZone(ctx, W, H);
-  drawSensorRings(ctx, W, H);
-  drawEffectorRanges(ctx, W, H);
-  drawInterceptVectors(ctx, W, H);
-  drawThreats(ctx, W, H);
-  drawEffectors(ctx, W, H);
-  drawFusionLines(ctx, W, H);
-}
-
-function drawBackground(ctx, W, H) {
-  // Grid
-  ctx.save();
-  ctx.strokeStyle = S.execMode ? 'rgba(0,0,0,0.06)' : 'rgba(26,51,72,0.4)';
-  ctx.lineWidth = 0.5;
-  const step = 40;
-  for (let x = 0; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-  for (let y = 0; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-
-  // Radar sweep
-  if (!S.execMode) {
-    const cx = W/2, cy = H/2;
-    const angle = (S.tick * 0.006) % (Math.PI*2);
-    const grad = ctx.createConicGradient(angle, cx, cy);
-    grad.addColorStop(0, 'rgba(0,255,157,0.05)');
-    grad.addColorStop(0.08, 'rgba(0,255,157,0)');
-    grad.addColorStop(1, 'rgba(0,255,157,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath(); ctx.arc(cx, cy, Math.max(W,H), 0, Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-}
-
-function drawDefendedZone(ctx, W, H) {
-  ctx.save();
-  ctx.strokeStyle = S.execMode ? 'rgba(0,100,68,0.3)' : 'rgba(0,255,157,0.1)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([6,4]);
-  ctx.strokeRect(W*0.08, H*0.65, W*0.84, H*0.28);
-  ctx.fillStyle = S.execMode ? 'rgba(0,100,68,0.04)' : 'rgba(0,255,157,0.03)';
-  ctx.fillRect(W*0.08, H*0.65, W*0.84, H*0.28);
-  ctx.setLineDash([]);
-  ctx.font = `9px 'Share Tech Mono'`;
-  ctx.fillStyle = S.execMode ? 'rgba(0,100,68,0.5)' : 'rgba(0,255,157,0.35)';
-  ctx.textAlign = 'center';
-  ctx.fillText('DEFENDED AREA · CRITICAL INFRASTRUCTURE', W/2, H*0.68);
-  ctx.restore();
-}
-
-function drawSensorRings(ctx, W, H) {
-  S.sensors.filter(s => s.online).forEach(s => {
-    // No fixed position for sensors - they're distributed
-    // Show coverage as overlapping arcs from edges
-  });
-}
-
-function drawEffectorRanges(ctx, W, H) {
-  S.effectors.forEach(e => {
-    const ex = e.x * W, ey = e.y * H;
-    const r = e.range * Math.min(W, H) * 0.9;
-    ctx.save();
-    const pulse = Math.sin(S.tick * 0.05) * 2;
-    if (e.engaging) {
-      ctx.strokeStyle = 'rgba(255,34,68,0.3)';
-      ctx.lineWidth = 1.5;
-    } else if (e.mode === 'assigned') {
-      ctx.strokeStyle = 'rgba(255,170,0,0.2)';
-      ctx.lineWidth = 1;
-    } else if (e.ammo <= 0) {
-      ctx.strokeStyle = 'rgba(90,128,153,0.1)';
-      ctx.lineWidth = 0.5;
-    } else {
-      ctx.strokeStyle = S.execMode ? 'rgba(0,100,68,0.12)' : 'rgba(0,255,157,0.07)';
-      ctx.lineWidth = 0.5;
-    }
-    ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.arc(ex, ey, r + (e.engaging ? pulse : 0), 0, Math.PI*2); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-  });
-}
-
-function drawInterceptVectors(ctx, W, H) {
-  S.threats.forEach(t => {
-    if (!t.fused || t.intercepted || !t.assignedEffector) return;
-    const e = S.effectors.find(x => x.id === t.assignedEffector);
-    if (!e || !e.engaging) return;
-    const tx = t.nx * W, ty = t.ny * H;
-    const ex = e.x * W, ey = e.y * H;
-    ctx.save();
-    ctx.strokeStyle = S.execMode ? 'rgba(0,68,136,0.7)' : 'rgba(0,184,255,0.7)';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([8,4]);
-    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(tx, ty); ctx.stroke();
-    ctx.setLineDash([]);
-    // Midpoint marker
-    const mx = (ex+tx)/2, my = (ey+ty)/2;
-    ctx.fillStyle = S.execMode ? 'rgba(0,68,136,0.8)' : 'rgba(0,184,255,0.8)';
-    ctx.font = `8px 'Share Tech Mono'`;
-    ctx.textAlign = 'center';
-    ctx.fillText('INTERCEPT', mx, my - 4);
-    ctx.restore();
-  });
-}
-
-function drawFusionLines(ctx, W, H) {
-  // Draw lines from center (fusion kernel) to active fused tracks
-  S.threats.filter(t => t.fused && !t.intercepted).forEach(t => {
-    const tx = t.nx * W, ty = t.ny * H;
-    const cx = W/2, cy = H * 0.62;
-    ctx.save();
-    ctx.strokeStyle = S.execMode ? 'rgba(102,51,153,0.15)' : 'rgba(170,68,255,0.12)';
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([2,4]);
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tx, ty); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-  });
-
-  // Kernel node
-  if (S.threats.some(t => t.fused && !t.intercepted)) {
-    const cx = W/2, cy = H * 0.62;
-    ctx.save();
-    const pr = 6 + Math.sin(S.tick * 0.1) * 2;
-    ctx.strokeStyle = S.execMode ? 'rgba(102,51,153,0.5)' : 'rgba(170,68,255,0.5)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(cx, cy, pr, 0, Math.PI*2); ctx.stroke();
-    ctx.fillStyle = S.execMode ? 'rgba(102,51,153,0.2)' : 'rgba(170,68,255,0.2)';
-    ctx.fill();
-    ctx.font = `8px 'Share Tech Mono'`;
-    ctx.fillStyle = S.execMode ? 'rgba(102,51,153,0.7)' : 'rgba(170,68,255,0.7)';
-    ctx.textAlign = 'center';
-    ctx.fillText('KERNEL', cx, cy + 16);
-    ctx.restore();
-  }
-}
-
-function drawThreats(ctx, W, H) {
-  S.threats.forEach(t => {
-    if (t.rejected && t.intercepted) return;
-    const x = t.nx * W, y = t.ny * H;
-    ctx.save();
-
-    // Flash on intercept
-    if (t.flash > 0) {
-      ctx.globalAlpha = t.flash;
-      ctx.beginPath(); ctx.arc(x, y, 24 * t.flash, 0, Math.PI*2);
-      ctx.fillStyle = t.color + '44'; ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    if (t.intercepted) { ctx.restore(); return; }
-
-    // Trail
-    ctx.strokeStyle = t.color + '44';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - t.vx*W*30, y - t.vy*H*30); ctx.stroke();
-
-    // Threat dot
-    ctx.beginPath(); ctx.arc(x, y, t.fused ? 6 : 4, 0, Math.PI*2);
-    ctx.fillStyle = t.color; ctx.fill();
-
-    // Pulse ring if fused
-    if (t.fused) {
-      const pr = 10 + Math.sin(S.tick * 0.12 + threatCounter) * 3;
-      ctx.strokeStyle = t.color + '66';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI*2); ctx.stroke();
-    }
-
-    // Label
-    ctx.font = `bold 9px 'Share Tech Mono'`;
-    ctx.fillStyle = t.color;
-    ctx.textAlign = 'left';
-    ctx.fillText(t.id, x + 9, y - 3);
-    if (t.classified) {
-      ctx.font = `8px 'Share Tech Mono'`;
-      ctx.fillStyle = t.color + 'aa';
-      ctx.fillText(t.label, x + 9, y + 7);
-      ctx.fillText(`${(t.fusedConf*100).toFixed(0)}%`, x + 9, y + 16);
-    }
-
-    // Assignment indicator
-    if (t.assignedEffector) {
-      const e = S.effectors.find(x => x.id === t.assignedEffector);
-      if (e) {
-        ctx.strokeStyle = '#ffaa0066';
-        ctx.lineWidth = 0.5;
-        ctx.setLineDash([2,3]);
-        ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2); ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    }
-
-    ctx.restore();
-  });
-}
-
-function drawEffectors(ctx, W, H) {
-  S.effectors.forEach(e => {
-    if (!e || e.ammo < 0) return;
-    const x = e.x * W, y = e.y * H;
-    ctx.save();
-
-    let color = S.execMode ? 'rgba(0,100,68,0.9)' : '#00ff9d';
-    if (e.engaging) color = '#ff2244';
-    else if (e.mode === 'assigned') color = '#ffaa00';
-    else if (e.autonomous) color = '#aa44ff';
-    else if (e.ammo <= 0) color = '#3a5566';
-
-    // Diamond
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color + '22';
-    ctx.lineWidth = e.engaging ? 2.5 : 1.5;
-    const s = 10;
-    ctx.beginPath();
-    ctx.moveTo(x, y-s); ctx.lineTo(x+s, y); ctx.lineTo(x, y+s); ctx.lineTo(x-s, y); ctx.closePath();
-    ctx.fill(); ctx.stroke();
-
-    // Center
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI*2); ctx.fill();
-
-    // Engaging pulse
-    if (e.engaging) {
-      const ep = 16 + Math.sin(S.tick * 0.25) * 5;
-      ctx.strokeStyle = '#ff224444';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(x, y, ep, 0, Math.PI*2); ctx.stroke();
-    }
-
-    // Label
-    ctx.font = `8px 'Share Tech Mono'`;
-    ctx.fillStyle = color;
-    ctx.textAlign = 'left';
-    ctx.fillText(e.name.split(' ').slice(-1)[0], x + 14, y + 3);
-    if (e.ammo <= 0) {
-      ctx.fillStyle = '#3a5566';
-      ctx.fillText('DEPLETED', x + 14, y + 12);
-    }
-
-    ctx.restore();
-  });
-}
-
-// ── SENSOR RENDERING ──────────────────────────
-function renderSensors() {
-  const list = document.getElementById('sensor-list');
-  list.innerHTML = '';
-  S.sensors.forEach(s => {
-    const status = s.online ? (s.conf > 0.8 ? 'online' : 'degraded') : 'offline';
-    const barColor = s.conf > 0.8 ? 'var(--green)' : (s.conf > 0.5 ? 'var(--amber)' : 'var(--red)');
-    const div = document.createElement('div');
-    div.className = `sensor-node ${status}`;
-    div.setAttribute('data-sensor', s.id);
-    div.onclick = () => toggleSensor(s.id);
-    div.innerHTML = `
-      <div class="sn-header">
-        <div class="sn-name">${s.name}</div>
-        <div class="sn-status ${status}">${status.toUpperCase()}</div>
-      </div>
-      <div class="sn-type">${s.type}</div>
-      <div class="sn-metrics">
-        <div class="sn-metric">
-          <div class="sn-metric-val green track-count-${s.id}">${s.tracks}</div>
-          <div class="sn-metric-lbl">TRACKS</div>
-        </div>
-        <div class="sn-metric">
-          <div class="sn-metric-val ${s.conf > 0.8 ? 'green' : 'amber'}">${(s.conf*100).toFixed(0)}%</div>
-          <div class="sn-metric-lbl">CONF</div>
-        </div>
-        <div class="sn-metric">
-          <div class="sn-metric-val ${s.online ? 'green' : 'red'}">${s.online ? 'UP' : 'DOWN'}</div>
-          <div class="sn-metric-lbl">STATUS</div>
-        </div>
-      </div>
-      <div class="conf-bar"><div class="conf-fill" style="width:${s.conf*100}%;background:${barColor}"></div></div>
-    `;
-    list.appendChild(div);
-  });
-  updateSensorBadge();
-}
-
-function renderEffectors() {
-  const list = document.getElementById('effector-list');
-  list.innerHTML = '';
-  S.effectors.forEach(e => {
-    const modeClass = e.engaging ? 'engaging' : (e.mode === 'assigned' ? 'assigned' : (e.ammo <= 0 ? 'offline' : 'ready'));
-    const badgeClass = e.engaging ? 'badge-engaging' : (e.autonomous ? 'badge-auto' : (e.mode === 'assigned' ? 'badge-assigned' : (e.ammo <= 0 ? 'badge-offline' : 'badge-ready')));
-    const badgeText = e.engaging ? 'ENGAGING' : (e.autonomous ? 'AUTONOMOUS' : (e.mode === 'assigned' ? 'ASSIGNED' : (e.ammo <= 0 ? 'DEPLETED' : 'READY')));
-    const ammoClass = e.ammo > 60 ? 'ammo-hi' : (e.ammo > 25 ? 'ammo-md' : 'ammo-lo');
-    const ammoPct = (e.ammo / e.maxAmmo * 100);
-
-    const pkColor = e.pk > 0.88 ? 'var(--green)' : (e.pk > 0.75 ? 'var(--blue)' : 'var(--amber)');
-
-    list.innerHTML += `
-      <div class="effector-card ${modeClass}">
-        <div class="ec-header">
-          <div class="ec-name">${e.name}</div>
-          <div class="ec-badge ${badgeClass}">${badgeText}</div>
-        </div>
-        <div class="ec-stats">
-          <div class="ec-stat">
-            <div class="ec-stat-val" style="color:${pkColor}">${(e.pk*100).toFixed(0)}%</div>
-            <div class="ec-stat-lbl">Pk</div>
-          </div>
-          <div class="ec-stat">
-            <div class="ec-stat-val" style="color:var(--blue)">${(e.range*100).toFixed(0)}km</div>
-            <div class="ec-stat-lbl">RANGE</div>
-          </div>
-          <div class="ec-stat">
-            <div class="ec-stat-val" style="color:${e.ammo < 20 ? 'var(--red)' : 'var(--text)'}">${e.type === 'MSL' ? e.ammo+'rnd' : e.ammo+'%'}</div>
-            <div class="ec-stat-lbl">AMMO</div>
-          </div>
-        </div>
-        ${e.assignedTo ? `<div style="font-family:var(--mono);font-size:8px;color:var(--amber);margin-top:3px;">→ TGT: ${e.assignedTo}</div>` : ''}
-        <div class="ammo-bar"><div class="ammo-fill ${ammoClass}" style="width:${ammoPct}%"></div></div>
-      </div>
-    `;
-  });
-  updateEffectorBadge();
-}
-
-// ── SENSOR/EFFECTOR CONTROLS ───────────────────
-function toggleSensor(id) {
-  const s = S.sensors.find(x => x.id === id);
-  if (!s) return;
-  s.online = !s.online;
-  const chip = document.getElementById(s.chipId);
-  if (chip) {
-    if (s.online) { chip.className = 'fchip on'; }
-    else { chip.className = 'fchip off'; }
-  }
-  addLog('sensor', s.online ? 'll-sensor' : 'll-c2', 'SENSOR',
-    `${s.name} ${s.online ? 'RESTORED' : 'OFFLINE'} · Fusion engine recalibrating · Active sensors: ${getOnlineSensors()}`);
-  if (!s.online) addLog('audit', 'll-audit', 'AUDIT', `Sensor degradation logged · ${s.name} · Hash:${rndHash()}`);
+function toggleSensor(id){
+  const s=S.sensors.find(x=>x.id===id);if(!s)return;
+  s.online=!s.online;
+  const chip=document.getElementById(s.chip);
+  if(chip)chip.className=`fc ${s.online?'on':'off'}`;
+  log(s.online?'se':'c2',s.online?'ls':'lc2','SENSOR',`${s.name} ${s.online?'RESTORED':'OFFLINE'} · Active sensors: ${S.sensors.filter(x=>x.online).length}`);
+  if(!s.online)log('au','lau','AUDIT',`Sensor degradation · ${s.name} · Hash:${rh()}`);
   renderSensors();
 }
 
-function getOnlineSensors() { return S.sensors.filter(s => s.online).length; }
-
-// ── C2 TOGGLE ──────────────────────────────────
-function toggleC2() {
-  S.c2Degraded = !S.c2Degraded;
-  const toggle = document.getElementById('c2-toggle');
-  const text = document.getElementById('c2-text');
-  const btn = document.getElementById('c2-btn');
-  const overlay = document.getElementById('c2-overlay');
-  const banner = document.getElementById('c2-banner');
-  const hb = document.getElementById('heartbeat-display');
-  const chip = document.getElementById('fc-c2');
-
-  if (S.c2Degraded) {
-    setAutonomyMode('guarded');
-    toggle.classList.add('degraded');
-    text.textContent = 'C2 DEGRADED';
-    btn.textContent = 'Restore C2';
-    btn.classList.add('active');
-    overlay.classList.add('show');
-    banner.classList.add('show');
-    hb.classList.add('degraded');
-    chip.className = 'fchip off';
-    document.getElementById('mode-banner').textContent = 'MODE: GUARDED-AUTONOMOUS';
-    document.getElementById('mode-banner').className = 'tac-overlay guarded';
-    addLog('c2', 'll-c2', 'C2 LOSS', '⚠⚠ CENTRAL C2 LINK LOST · Activating GUARDED-AUTONOMOUS mode · All nodes transitioning · Local autonomy ACTIVE');
-    addLog('audit', 'll-audit', 'AUDIT', `Autonomy transition: CENTRALIZED → GUARDED-AUTONOMOUS · Watchdog timers armed · Hash:${rndHash()}`);
-    S.effectors.forEach(e => { if (e.mode === 'ready') e.autonomous = true; });
-  } else {
-    setAutonomyMode('central');
-    toggle.classList.remove('degraded');
-    text.textContent = 'C2 NOMINAL';
-    btn.textContent = 'Degrade C2';
-    btn.classList.remove('active');
-    overlay.classList.remove('show');
-    banner.classList.remove('show');
-    hb.classList.remove('degraded');
-    chip.className = 'fchip on';
-    document.getElementById('mode-banner').textContent = 'MODE: CENTRALIZED';
-    document.getElementById('mode-banner').className = 'tac-overlay';
-    addLog('c2', 'll-system', 'C2 RESTORE', '✓ C2 LINK RESTORED · Returning to CENTRALIZED arbitration · Local autonomy standing down');
-    addLog('audit', 'll-audit', 'AUDIT', `Autonomy transition: GUARDED-AUTONOMOUS → CENTRALIZED · Hash:${rndHash()}`);
-    S.effectors.forEach(e => { e.autonomous = false; });
+function toggleC2(){
+  S.c2deg=!S.c2deg;
+  const btn=document.getElementById('c2btn'),txt=document.getElementById('c2txt');
+  const dbtn=document.getElementById('c2dbtn');
+  const ov=document.getElementById('c2ov'),ban=document.getElementById('c2ban');
+  const hb=document.getElementById('hbeat'),hbv=document.getElementById('hbv');
+  const chip=document.getElementById('fc-c2lnk');
+  const mb=document.getElementById('modebanner');
+  if(S.c2deg){
+    btn.classList.add('deg');txt.textContent='C2 DEGRADED';
+    dbtn.textContent='Restore C2';dbtn.classList.add('act');
+    ov.classList.add('show');ban.classList.add('show');
+    hb.classList.add('deg');hbv.textContent='LOST';
+    chip.className='fc off';
+    mb.textContent='MODE: GUARDED-AUTONOMOUS';mb.className='ov g';
+    setAutoMode('guarded');
+    S.effectors.forEach(e=>{if(e.mode==='ready')e.auto=true;});
+    log('c2','lc2','C2 LOSS','⚠⚠ CENTRAL C2 LINK LOST · GUARDED-AUTONOMOUS mode active · Local autonomy armed');
+    log('au','lau','AUDIT',`Mode transition: CENTRALIZED → GUARDED-AUTO · Hash:${rh()}`);
+  }else{
+    btn.classList.remove('deg');txt.textContent='C2 NOMINAL';
+    dbtn.textContent='Degrade C2';dbtn.classList.remove('act');
+    ov.classList.remove('show');ban.classList.remove('show');
+    hb.classList.remove('deg');
+    chip.className='fc on';
+    mb.textContent='MODE: CENTRALIZED';mb.className='ov';
+    setAutoMode('central');
+    S.effectors.forEach(e=>{e.auto=false;});
+    log('sy','lsy','C2 RESTORE','✓ C2 LINK RESTORED · Returning to CENTRALIZED arbitration');
+    log('au','lau','AUDIT',`Mode transition: GUARDED-AUTO → CENTRALIZED · Hash:${rh()}`);
   }
   renderEffectors();
 }
 
-function setAutonomyMode(mode) {
-  S.autonomyMode = mode;
-  ['central','guarded','constrained','manual'].forEach(m => {
-    const el = document.getElementById(`am-${m}`);
-    if (el) el.className = `amd-mode ${m === mode ? `active-${m}` : ''}`;
+function setAutoMode(m){
+  S.autoMode=m;
+  const map={'central':'ac','guarded':'ag','constrained':'aconst','manual':'am'};
+  ['central','guarded','constrained','manual'].forEach(x=>{
+    const el=document.getElementById(`am-${x[0]}`);
+    if(el)el.className=`amdm${x===m?' '+map[x]:''}`;
   });
 }
 
-function triggerSpoof() {
-  addLog('fusion', 'll-fusion', 'SPOOF', 'Ghost track injection detected · Multi-sensor cross-validation initiated · AESA / EO-IR correlation...');
-  const nx = 0.1 + Math.random() * 0.8;
-  const ny = 0.05 + Math.random() * 0.4;
-  createThreat('ghost', nx, ny, 0.3, 1);
+function doSpawn(){
+  const type=document.getElementById('ttype').value;
+  if(type==='ghost'){doSpoof();return;}
+  if(type==='swarm'){doWave(5);return;}
+  const brg=parseInt(document.getElementById('tbrg').value);
+  const spd=parseInt(document.getElementById('tspd').value)/5;
+  const props=TPROPS[type];
+  const rad=(brg-90)*Math.PI/180;
+  const m=.05;
+  let nx,ny;
+  const cos=Math.cos(rad),sin=Math.sin(rad);
+  if(Math.abs(cos)>Math.abs(sin)){nx=cos>0?1-m:m;ny=.5-sin*(.5-m)/Math.abs(cos);}
+  else{ny=sin>0?m:1-m;nx=.5+cos*(.5-m)/Math.abs(sin);}
+  ny=Math.max(m,Math.min(.6,ny));
+  spawnTrack(type,nx,ny,props.speed*spd);
 }
 
-// ── HEARTBEAT SIMULATION ───────────────────────
-function startHeartbeat() {
-  S.hbInterval = setInterval(() => {
-    if (!S.c2Degraded) {
-      S.hbVal = 80 + Math.floor(Math.random() * 40);
-      const el = document.getElementById('hb-val');
-      if (el) el.textContent = `${S.hbVal}ms`;
-    } else {
-      const el = document.getElementById('hb-val');
-      if (el) el.textContent = 'LOST';
-    }
-  }, 800);
+function doWave(n){
+  const cnt=n||(3+Math.floor(Math.random()*4));
+  log('ar','la','WARNING',`⚠ SATURATION ATTACK · ${cnt} tracks · Multi-threat arbitration active · Endurance management engaged`);
+  const types=['fpv','lm','fpv','cm','fpv','atgm','lm'];
+  for(let i=0;i<cnt;i++){
+    setTimeout(()=>{
+      const brg=Math.random()*360,tp=types[i%types.length],props=TPROPS[tp];
+      const rad=(brg-90)*Math.PI/180;
+      const nx=Math.max(.02,Math.min(.98,.5+Math.cos(rad)*(.46+Math.random()*.05)));
+      const ny=Math.max(.02,Math.min(.55,.5+Math.sin(rad)*(.46+Math.random()*.05)));
+      spawnTrack(tp,nx,ny,props.speed);
+    },i*400+Math.random()*200);
+  }
 }
 
-// ── SENSOR METRICS UPDATE ─────────────────────
-function updateSensorMetrics() {
-  const active = S.threats.filter(t => !t.intercepted).length;
-  S.sensors.forEach(s => {
-    if (!s.online) return;
-    s.tracks = Math.min(active, Math.floor(active * (0.6 + Math.random()*0.4)));
-    const el = document.querySelector(`.track-count-${s.id}`);
-    if (el) el.textContent = s.tracks;
+function doSpoof(){
+  log('fu','lf','SPOOF','Ghost track injection detected · Multi-sensor cross-validation initiated...');
+  spawnTrack('ghost',.1+Math.random()*.8,.05+Math.random()*.4,.3);
+}
+
+function doReset(){
+  S.threats=[];S.intercepts=0;S.redundant=0;
+  S.sensors=SDEFS.map(d=>({...d}));
+  S.effectors=EDEFS.map(d=>({...d}));
+  if(S.c2deg)toggleC2();
+  renderSensors();renderEffectors();
+  renderScores([],null);
+  document.getElementById('fcbadge').textContent='FUSION: IDLE';
+  document.getElementById('spoofal').classList.remove('show');
+  ['fc-aesa','fc-eoir','fc-acou','fc-rf','fc-c2lnk'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.className='fc on';
   });
+  log('au','lau','RESET',`System reset · All tracks cleared · Effectors and sensors restored · Hash:${rh()}`);
 }
 
-// ── TOP STATS ─────────────────────────────────
-function updateTopStats() {
-  const active = S.threats.filter(t => !t.intercepted).length;
-  document.getElementById('stat-tracks').textContent = active;
-  document.getElementById('stat-intercepts').textContent = S.intercepts;
-
-  const rdEl = document.getElementById('stat-redundant');
-  rdEl.textContent = S.redundant;
-  rdEl.className = `sys-stat-val ${S.redundant > 2 ? 'crit' : 'warn'}`;
-
-  const onSensors = getOnlineSensors();
-  const sEl = document.getElementById('stat-sensors');
-  sEl.textContent = `${onSensors}/5`;
-  sEl.className = `sys-stat-val ${onSensors < 3 ? 'crit' : onSensors < 5 ? 'warn' : ''}`;
-
-  const onEffectors = S.effectors.filter(e => e.ammo > 0).length;
-  const eEl = document.getElementById('stat-effectors');
-  eEl.textContent = `${onEffectors}/5`;
-  eEl.className = `sys-stat-val ${onEffectors < 2 ? 'crit' : onEffectors < 4 ? 'warn' : ''}`;
+function updateStats(){
+  const active=S.threats.filter(t=>!t.intercepted).length;
+  document.getElementById('st-tracks').textContent=active;
+  document.getElementById('st-int').textContent=S.intercepts;
+  const re=document.getElementById('st-red');
+  re.textContent=S.redundant;re.className=`ss-v${S.redundant>2?' crit':' warn'}`;
+  const on=S.sensors.filter(s=>s.online).length;
+  const se=document.getElementById('st-sen');
+  se.textContent=`${on}/5`;se.className=`ss-v${on<3?' crit':on<5?' warn':''}`;
+  const oe=S.effectors.filter(e=>e.ammo>0).length;
+  const ef=document.getElementById('st-eff');
+  ef.textContent=`${oe}/5`;ef.className=`ss-v${oe<2?' crit':oe<4?' warn':''}`;
 }
 
-function updateSensorBadge() {
-  const n = getOnlineSensors();
-  const badge = document.getElementById('sensor-badge');
-  badge.textContent = `${n} ONLINE`;
-  badge.className = `ph-badge ${n < 3 ? 'crit' : n < 5 ? 'warn' : ''}`;
+function canvasClick(ev){
+  const r=S.canvas.getBoundingClientRect();
+  const nx=(ev.clientX-r.left)/S.W,ny=(ev.clientY-r.top)/S.H;
+  if(ny>.65)return;
+  const type=document.getElementById('ttype').value;
+  if(type==='ghost'||type==='swarm'){doSpawn();return;}
+  spawnTrack(type,nx,ny,TPROPS[type].speed);
 }
 
-function updateEffectorBadge() {
-  const n = S.effectors.filter(e => e.ammo > 0).length;
-  const badge = document.getElementById('arb-badge');
-  badge.textContent = `${n}/5 READY`;
-  badge.className = `ph-badge ${n < 2 ? 'crit' : n < 4 ? 'warn' : ''}`;
+function setMode(m){
+  S.execMode=m==='exe';
+  document.body.className=S.execMode?'exec':'';
+  document.getElementById('mc-tac').className=`mc${m==='tac'?' active':''}`;
+  document.getElementById('mc-exe').className=`mc${m==='exe'?' active':''}`;
 }
 
-// ── VIEW MODE TOGGLE ──────────────────────────
-function setViewMode(mode) {
-  S.execMode = mode === 'exec';
-  document.body.className = S.execMode ? 'exec' : '';
-  document.getElementById('chip-tactical').className = `mode-chip ${mode === 'tactical' ? 'active' : ''}`;
-  document.getElementById('chip-exec').className = `mode-chip ${mode === 'exec' ? 'active' : ''}`;
-}
+function updBrg(v){document.getElementById('brgv').textContent=String(v).padStart(3,'0')+'°';}
+function updSpd(v){const l=['','V.SLOW','SLOW','SLOW','MED','MED','FAST','FAST','V.FAST','V.FAST','MACH'];document.getElementById('spdv').textContent=l[v]||'MED';}
+function updSig(v){const l=['','VLOW','LOW','LOW','MED','MED','MED','HIGH','HIGH','VHIGH','MAX'];document.getElementById('sigv').textContent=l[v]||'MED';}
 
-// ── BEARING/SPEED INPUTS ──────────────────────
-function updateBearing(v) {
-  document.getElementById('bearing-val').textContent = String(v).padStart(3,'0') + '°';
-}
-function updateSpeed(v) {
-  const labels = ['','VERY SLOW','SLOW','SLOW','MED','MED','FAST','FAST','VERY FAST','VERY FAST','MACH'];
-  document.getElementById('speed-val').textContent = labels[v] || 'MED';
-}
-function updateSig(v) {
-  const labels = ['','VLOW','LOW','LOW','MED','MED','MED','HIGH','HIGH','VHIGH','MAX'];
-  document.getElementById('sig-val').textContent = labels[v] || 'MED';
-}
-
-// ── CANVAS CLICK ──────────────────────────────
-function canvasClick(e) {
-  const rect = S.canvas.getBoundingClientRect();
-  const nx = (e.clientX - rect.left) / S.W;
-  const ny = (e.clientY - rect.top) / S.H;
-  if (ny > 0.65) return;
-  const type = document.getElementById('threat-type').value;
-  if (type === 'ghost' || type === 'swarm') { spawnThreat(); return; }
-  const props = THREAT_PROPS[type];
-  createThreat(type, nx, ny, props.speed, 1);
-}
-
-// ── CLEAR ─────────────────────────────────────
-function clearAll() {
-  S.threats = [];
-  S.intercepts = 0;
-  S.redundant = 0;
-  S.effectors = EFFECTOR_DEFS.map(d => ({...d}));
-  S.sensors = SENSOR_DEFS.map(d => ({...d}));
-  if (S.c2Degraded) toggleC2();
-  renderSensors();
-  renderEffectors();
-  renderScores([], null);
-  document.getElementById('fusion-conf-badge').textContent = 'FUSION: IDLE';
-  document.getElementById('spoof-alert').classList.remove('show');
-  addLog('audit', 'll-audit', 'RESET', `System reset · All tracks cleared · Effectors and sensors restored · Hash:${rndHash()}`);
-}
-
-// ── AUDIT LOG ─────────────────────────────────
-function addLog(type, layerClass, layerText, msg) {
+function log(type,cls,layer,msg){
   S.logCount++;
-  document.getElementById('log-badge').textContent = `${S.logCount} EVENTS`;
-  const log = document.getElementById('audit-log');
-  const entry = document.createElement('div');
-  entry.className = 'log-entry';
-  const ts = new Date().toISOString().split('T')[1].replace('Z','').substring(0,11);
-  const hash = (type === 'audit') ? `<span class="log-hash">[${rndHash()}]</span>` : '';
-  entry.innerHTML = `<span class="log-ts">${ts}</span><span class="log-layer ${layerClass}">${layerText}</span><span class="log-msg">${msg}</span>${hash}`;
-  log.insertBefore(entry, log.firstChild);
-  while (log.children.length > 100) log.removeChild(log.lastChild);
+  document.getElementById('logbadge').textContent=`${S.logCount} EVENTS`;
+  const al=document.getElementById('alog');
+  const d=document.createElement('div');d.className='lent';
+  const ts=new Date().toISOString().split('T')[1].replace('Z','').substring(0,11);
+  const hash=type==='au'?`<span class="lhsh">[${rh()}]</span>`:'';
+  d.innerHTML=`<span class="lts">${ts}</span><span class="llyr ${cls}">${layer}</span><span class="lmsg">${msg}</span>${hash}`;
+  al.insertBefore(d,al.firstChild);
+  while(al.children.length>120)al.removeChild(al.lastChild);
 }
 
-function rndHash() {
-  return Array.from({length:8}, () => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
-}
+function rh(){return Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();}
 
-// ── START ─────────────────────────────────────
-window.addEventListener('load', init);
-window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
+window.addEventListener('load',init);
+window.addEventListener('resize',()=>setTimeout(resize,100));
 </script>
 
 </body>
