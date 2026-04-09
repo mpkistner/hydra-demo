@@ -215,9 +215,11 @@ user-select: none;
 /* MAIN LAYOUT */
 #app {
 display: grid;
-grid-template-columns: 240px 1fr 260px;
+grid-template-columns: 220px 1fr 240px;
 grid-template-rows: 1fr 200px;
 height: calc(100vh - 52px);
+min-width: 0;
+overflow: hidden;
 }
 
 /* PANELS */
@@ -513,15 +515,19 @@ grid-row: 2;
 border-right: none;
 border-bottom: none;
 display: grid;
-grid-template-columns: 320px 1fr;
+grid-template-columns: 300px 1fr;
 background: var(–bg1);
 border-top: 1px solid var(–border2);
+min-width: 0;
+overflow: hidden;
 }
 
 #threat-panel {
 border-right: 1px solid var(–border);
 display: flex;
 flex-direction: column;
+min-width: 0;
+overflow: hidden;
 }
 
 .threat-form { padding: 8px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
@@ -592,6 +598,8 @@ flex: 1;
 display: flex;
 flex-direction: column;
 border-right: none;
+min-width: 0;
+overflow: hidden;
 }
 
 #audit-log {
