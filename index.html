@@ -770,9 +770,9 @@ function renderSensors(){
   const list=document.getElementById('slist');
   list.innerHTML='';
   S.sensors.forEach(s=>{
-    const st=s.online?(s.conf>.8?'on':'deg'):'off';
-    const stlbl=s.online?(s.conf>.8?'ONLINE':'DEGRADED'):'OFFLINE';
-    const bcolor=s.conf>.8?'var(--green)':(s.conf>.5?'var(--amber)':'var(--red)');
+    const st=s.online?(s.conf>.6?'on':'deg'):'off';
+    const stlbl=s.online?(s.conf>.6?'ONLINE':'DEGRADED'):'OFFLINE';
+    const bcolor=s.conf>.6?'var(--green)':(s.conf>.4?'var(--amber)':'var(--red)');
     const d=document.createElement('div');
     d.className=`snode ${st}`;d.setAttribute('data-sid',s.id);d.onclick=()=>toggleSensor(s.id);
     d.innerHTML=`
@@ -780,7 +780,7 @@ function renderSensors(){
       <div class="sn-type">${s.type}</div>
       <div class="sn-m">
         <div class="sn-box"><div class="sn-bv g tc-${s.id}">${s.tracks}</div><div class="sn-bl">TRACKS</div></div>
-        <div class="sn-box"><div class="sn-bv ${s.conf>.8?'g':'a'}">${(s.conf*100).toFixed(0)}%</div><div class="sn-bl">CONF</div></div>
+        <div class="sn-box"><div class="sn-bv ${s.conf>.6?'g':'a'}">${(s.conf*100).toFixed(0)}%</div><div class="sn-bl">CONF</div></div>
         <div class="sn-box"><div class="sn-bv ${s.online?'g':'a'}">${s.online?'UP':'DOWN'}</div><div class="sn-bl">STATUS</div></div>
       </div>
       <div class="cbar"><div class="cbfill" style="width:${s.conf*100}%;background:${bcolor}"></div></div>
